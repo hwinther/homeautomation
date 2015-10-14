@@ -58,3 +58,6 @@ target/
 
 # Log files
 *.log
+
+# Active config
+hasettings.py
