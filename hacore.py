@@ -1,7 +1,10 @@
 #!/usr/bin/python
 from hacommon import ThreadList, QueueList, LoadModulesFromTuple
-from hasettings import INSTALLED_APPS, WEBSERVICE_ENABLED, REMOTE_APPS, REMOTE_SOCKET_ENABLED
+from hasettings import INSTALLED_APPS, REMOTE_APPS
 from habase import HomeAutomationQueueThread
+from hawebservice import HAWebService #for issubclass
+
+from ledmatrixbase import LEDMatrixBase
 from cli import LEDMatrixSocketClient
 
 import logging, json, time, sys, os, traceback
@@ -19,22 +22,23 @@ def HACore():
 	
 	#create threads and so on
 	for mod in modules:
+		mt = None
 		if issubclass(modules[mod].cls, HomeAutomationQueueThread):
-			mt = modules[mod].cls(name=mod, callback_function=None, queue=sharedqueue)
+			mt = modules[mod].cls(name=mod, callback_function=None, queue=sharedqueue, threadlist=threadlist)
+		elif issubclass(modules[mod].cls, LEDMatrixBase):
+			pass #leave these to be created within LEDMatrixCore
 		else: #assume its the level below (no queue)
+			logging.debug('Instantiating module ' + mod)
 			mt = modules[mod].cls(name=mod, callback_function=None)
-		threadlist.append(mt)
+		
+		if mt != None:
+			if issubclass(modules[mod].cls, HAWebService):
+				mt.daemon = True
+			threadlist.append(mt)
 	
 	logging.debug('Starting up module threads')
 	for ti in threadlist:
 		ti.start() #start all threads at this point
-
-	if WEBSERVICE_ENABLED:
-		from hawebservice import HAWebService
-		lmws = HAWebService(name='WebService', callback_function=None, sharedqueue=sharedqueue)
-		lmws.daemon = True
-		lmws.start()
-		threadlist.append(lmws)
 
 	timecheck = time.time()
 	while 1:
@@ -60,6 +64,7 @@ def HACore():
 					if not _thread.isAlive():
 						logging.debug('Removing dead thread: ' + _thread.name)
 						threadlist.remove(_thread)
+			
 		except KeyboardInterrupt:
 			logging.info('Detected ctrl+c, exiting main loop and stopping all threads')
 			break

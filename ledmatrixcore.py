@@ -1,7 +1,9 @@
 #!/usr/bin/python
-from hacommon import StateQueueItem, ThreadList, QueueList
+from habase import HomeAutomationQueueThread
+from hacommon import ThreadList, QueueList, LoadModulesFromTuple
 from halogging import InitLogging, LogConcat
-from hasettings import BASE_DIR
+from hasettings import BASE_DIR, LEDMATRIXCORE_APPS
+from webservicecommon import webservicedecorator_globals_add, webservice_state_instances_add
 from ledmatrixcolor import CreateColormap
 #from dgfont import displayCurrentTime
 from rgbmatrix import Adafruit_RGBmatrix
@@ -14,7 +16,6 @@ from transitions.core import MachineError
 #MODULES:
 from ledmatriximage import LEDMatrixImage
 from ledmatrixaudio import LEDMatrixAudio
-from ledmatrixwebservice import LEDMatrixWebService
 from ledmatrixsocketservice import LEDMatrixSocketServiceUDP
 
 def SplashScreen(rgbmatrix):
@@ -93,7 +94,7 @@ class RGBMatrix(object):
 
 	def on_enter_audiovisualizing(self, filename):
 		logging.debug("We've just entered state audiovisualizing!")
-		lma = LEDMatrixAudio(name='Audio', rgbmatrix=rgbmatrix, callback_function=self.to_idle, filepath=filename) #which one is it?
+		lma = LEDMatrixAudio(name='Audio', rgbmatrix=self.rgbmatrix, callback_function=self.to_idle, filepath=filename) #which one is it?
 		lma.start()
 		self.current_audio_thread = lma
 		self.threadlist.append(lma)
@@ -105,53 +106,79 @@ class RGBMatrix(object):
 
 	def on_enter_settingmatrixfromimage(self, imagedata):
 		logging.debug("We've just entered state settingmatrixfromimage!")
-		lmi = LEDMatrixImage(name='Image', rgbmatrix=rgbmatrix, callback_function=self.to_idle, imagebase64=imagedata)
+		lmi = LEDMatrixImage(name='Image', rgbmatrix=self.rgbmatrix, callback_function=self.to_idle, imagebase64=imagedata)
 		lmi.start()
 		self.threadlist.append(lmi)
-		
+	
 	def on_enter_splashscreen(self):
-		SplashScreen(rgbmatrix)
+		SplashScreen(self.rgbmatrix)
 		self.to_idle()
-		
+	
 	def on_enter_screensaver(self):
-		#ScreensaverA(rgbmatrix)
-		#SplashScreen(rgbmatrix)
-		self.to_idle()
+		pass
+		#ScreensaverA(self.rgbmatrix)
+		#SplashScreen(self.rgbmatrix)
+		#self.to_idle()
 
-def LEDMatrixCore(rgbmatrix):
-	'''This class puts it all together, creating a state machine and a socket thread that calls state changes for received commands'''
-	logging.info('LEDMatrixCore started')
-	threadlist = ThreadList()
-	queue = QueueList()
-	rgbm = RGBMatrix(rgbmatrix, threadlist)
-	
-	transitions = [
-		{ 'trigger': 'SetPixel', 'source': 'idle', 'dest': 'settingpixel' },
-		{ 'trigger': 'Clear', 'source': 'idle', 'dest': 'clearing' },
-		{ 'trigger': 'AudioVisualize', 'source': 'idle', 'dest': 'audiovisualizing' },
-		{ 'trigger': 'StopAudioVisualize', 'source': 'audiovisualizing', 'dest': 'stopaudiovisualizing' },
-		{ 'trigger': 'SetMatrixFromImgBase64', 'source': 'idle', 'dest': 'settingmatrixfromimage' },
-		{ 'trigger': 'Screensaver', 'source': 'idle', 'dest': 'screensaver' },
-		{ 'trigger': 'SplashScreen', 'source': 'idle', 'dest': 'splashscreen' },
-	]
-	machine = Machine(model=rgbm,
-		states=['idle', 'settingpixel', 'clearing', 'audiovisualizing', 'settingmatrixfromimage',
-			'stopaudiovisualizing', 'screensaver', 'splashscreen'], transitions=transitions, initial='idle')
+class LEDMatrixCore(HomeAutomationQueueThread):
+	"""@staticmethod
+	def webservice_definitions():
+		WebServiceDefinitions = []
+		modules = LoadModulesFromTuple(LEDMATRIXCORE_APPS)
+		for mod in modules:
+			if modules[mod].cls.webservice_definitions != None:
+				WebServiceDefinitions.extend(modules[mod].cls.webservice_definitions)
+		return WebServiceDefinitions"""
 
-	lmws = LEDMatrixWebService(name='WebService', callback_function=None, rgbmatrix=rgbmatrix, g_rgbm=rgbm, g_queue=queue)
-	lmws.daemon = True
-	lmws.start()
-	threadlist.append(lmws)
+	def __init__(self, name, callback_function, queue, threadlist):
+		'''This class puts it all together, creating a state machine and a socket thread that calls state changes for received commands'''
+		HomeAutomationQueueThread.__init__(self, name, callback_function, queue, threadlist)
+
+		logging.info('LEDMatrixCore initialized')
+		self.rgbmatrix = Adafruit_RGBmatrix(32, 1)
+		self.rgbm = RGBMatrix(self.rgbmatrix, self.threadlist)
 	
-	lmssu = LEDMatrixSocketServiceUDP(name='SocketService', callback_function=None, rgbmatrix=rgbmatrix, rgbm=rgbm, queue=queue)
-	lmssu.start()
-	threadlist.append(lmssu)
+		self.transitions = [
+			{ 'trigger': 'SetPixel', 'source': 'idle', 'dest': 'settingpixel' },
+			{ 'trigger': 'Clear', 'source': 'idle', 'dest': 'clearing' },
+			{ 'trigger': 'AudioVisualize', 'source': 'idle', 'dest': 'audiovisualizing' },
+			{ 'trigger': 'StopAudioVisualize', 'source': 'audiovisualizing', 'dest': 'stopaudiovisualizing' },
+			{ 'trigger': 'SetMatrixFromImgBase64', 'source': 'idle', 'dest': 'settingmatrixfromimage' },
+			{ 'trigger': 'Screensaver', 'source': 'idle', 'dest': 'screensaver' },
+			{ 'trigger': 'SplashScreen', 'source': 'idle', 'dest': 'splashscreen' },
+		]
+		self.states=['idle', 'settingpixel', 'clearing', 'audiovisualizing', 'settingmatrixfromimage',
+				'stopaudiovisualizing', 'screensaver', 'splashscreen']
+		
+		self.machine = Machine(model = self.rgbm,
+			states = self.states, transitions = self.transitions, initial = 'idle')
+
+		lmssu = LEDMatrixSocketServiceUDP(name='SocketService', callback_function=None, rgbmatrix=self.rgbmatrix, rgbm=self.rgbm, queue=queue)
+		#lmssu.start()
+		threadlist.append(lmssu) #hacore should start() it afterwards
+		
+		global CurrentInstance
+		CurrentInstance = self
+		
+	def pre_processqueue(self):
+		webservicedecorator_globals_add(rgbm=self.rgbm)
+		webservice_state_instances_add(self.__class__.__name__, self.rgbm.get_json_state)
+		self.rgbm.to_splashscreen()
+		self.timecheck = time.time()
+		super(LEDMatrixCore, self).pre_processqueue()
+		
+	def post_processqueue(self):
+		if time.time() - self.timecheck > 30:
+			self.timecheck = time.time()
+			logging.debug('30s interval')
+			if self.rgbm.is_idle():
+				self.rgbm.Screensaver()
+		super(LEDMatrixCore, self).post_processqueue()
+		
+	def get_class_name(self):
+		return self.__class__.__name__
 	
-	rgbm.to_splashscreen()
-	
-	#drawClock = False
-	#drawClockClear = True
-	timecheck = time.time()
+	"""
 	while 1:
 		#main loop that handles queue and threads, and through executing queue item changes the state of the statemachine
 		try:
@@ -207,8 +234,9 @@ def LEDMatrixCore(rgbmatrix):
 		#	break
 	for _thread in threadlist:
 		_thread.stop_event.set() #telling the threads to stop
+	"""
 
-if __name__ == '__main__':
-	InitLogging(BASE_DIR + os.sep + 'rgbmatrix.log')
-	rgbmatrix = Adafruit_RGBmatrix(32, 1)
-	LEDMatrixCore(rgbmatrix)
+#if __name__ == '__main__':
+#	InitLogging(BASE_DIR + os.sep + 'rgbmatrix.log')
+#	rgbmatrix = Adafruit_RGBmatrix(32, 1)
+#	LEDMatrixCore(rgbmatrix)

@@ -1,13 +1,118 @@
 #!/usr/bin/python
 from ledmatrixbase import LEDMatrixBase
+from webservicecommon import WebServiceDefinition, webservice_jsonp
+from hacommon import SerializableQueueItem
 import logging
 
 import alsaaudio as aa
 from struct import unpack
 from datetime import datetime
 import numpy as np
-import wave, sys, time
+import wave, sys, time, os
 from ledmatrixcolor import CreateColormap
+
+class WebService_PlayWav_And_State_JSONP(object):
+	@webservice_jsonp
+	def GET(self, filename, SharedQueue, ThreadList, rgbm):
+		if not filename:
+			logging.warn('WebService_PlayWav_And_State_JSONP missing filename argument')
+			return 'WebService_PlayWav_And_State_JSONP missing filename argument' #this will in turn cause an exception in JS.. desired? IDK
+		filepath = '/home/pi/wav/' + filename #TODO: get this path from config
+		if not os.path.exists(filepath):
+			logging.info('WebService_PlayWav_And_State_JSONP File path does not exist: ' + filepath)
+			return 'WebService_PlayWav_And_State_JSONP File path does not exist: ' + filepath
+		#if rgbm.is_audiovisualizing(): #not sure if this will work properly - it did not, we got idle state with music playing
+		#	rgbm.StopAudioVisualize()
+		logging.info('WebService_PlayWav_And_State_JSONP Playing wav file with audio visualizer:' + filepath)
+		SharedQueue.append(SerializableQueueItem('LEDMatrixCore', rgbm.AudioVisualize, filepath))
+		time.sleep(0.2) #give the main loop time to fetch this item (alternatively, can we push it directly to the SM?)
+		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}' #TODO: a prettier solution for this maybe.. decorator?
+
+class WebService_AudioStop_And_State_JSONP(object):
+	@webservice_jsonp
+	def GET(self, SharedQueue, ThreadList, rgbm):
+		logging.info('Attempting to stop audio thread')
+		if rgbm.is_audiovisualizing():
+			rgbm.StopAudioVisualize()
+		time.sleep(0.2) #give the main loop time to fetch this item (alternatively, can we push it directly to the SM?)
+		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+		
+class WebService_AudioTest_And_State_JSONP(object):
+	@webservice_jsonp
+	def GET(self, SharedQueue, ThreadList, rgbm):
+		logging.info('Attempting to test something in the audio thread')
+		if rgbm.current_audio_thread != None and rgbm.current_audio_thread.isAlive():
+			new_freq_step = int(rgbm.current_audio_thread.freq_step * 0.9)
+			logging.info('Setting audio thread freq_step to ' + str(new_freq_step) + ' making max freq ' + str(new_freq_step*31) )
+			rgbm.current_audio_thread.freq_step = new_freq_step
+		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+		
+class WebService_AudioSetMaxFreq_And_State_JSONP(object):
+	@webservice_jsonp
+	def GET(self, freqmax, SharedQueue, ThreadList, rgbm):
+		if not freqmax:
+			logging.warn('WebService_AudioSetMaxFreq_And_State_JSONP missing freqmax argument')
+			return 'WebService_AudioSetMaxFreq_And_State_JSONP missing freqmax argument'
+		logging.info('Attempting to change freqmax for audio thread')
+		if rgbm.current_audio_thread != None and rgbm.current_audio_thread.isAlive():
+			new_freq_step = int(int(freqmax) / 32.0) #TODO: get this from screen width config value
+			logging.info('Setting audio thread freqmax to ' + str(freqmax) + ' making freq_step ' + str(new_freq_step) )
+			rgbm.current_audio_thread.freq_step = new_freq_step
+		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+		
+class WebService_AudioToggleSingleLine_And_State_JSONP(object):
+	@webservice_jsonp
+	def GET(self, SharedQueue, ThreadList, rgbm):
+		logging.info('Attempting to toggle singleline in audio thread')
+		if rgbm.current_audio_thread != None and rgbm.current_audio_thread.isAlive():
+			logging.info('Toggling singleline on audio thread')
+			rgbm.current_audio_thread.singleLine = not rgbm.current_audio_thread.singleLine
+		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+		
+class WebService_AudioToggleBeat_And_State_JSONP(object):
+	@webservice_jsonp
+	def GET(self, SharedQueue, ThreadList, rgbm):
+		logging.info('Attempting to toggle beat in audio thread')
+		if rgbm.current_audio_thread != None and rgbm.current_audio_thread.isAlive():
+			logging.info('Toggling beat detection on audio thread')
+			rgbm.current_audio_thread.beatEnabled = not rgbm.current_audio_thread.beatEnabled
+		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+		
+class WebService_AudioPause_And_State_JSONP(object):
+	@webservice_jsonp
+	def GET(self, SharedQueue, ThreadList, rgbm):
+		logging.info('Attempting to pause audio thread')
+		if rgbm.current_audio_thread != None and rgbm.current_audio_thread.isAlive():
+			logging.info('Pausing audio thread')
+			rgbm.current_audio_thread.paused = True
+		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+		
+class WebService_AudioResume_And_State_JSONP(object):
+	@webservice_jsonp
+	def GET(self, SharedQueue, ThreadList, rgbm):
+		logging.info('Attempting to resume audio thread')
+		if rgbm.current_audio_thread != None and rgbm.current_audio_thread.isAlive():
+			logging.info('Resuming audio thread')
+			rgbm.current_audio_thread.paused = False
+		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+		
+class WebService_AudioSetColormap_And_State_JSONP(object):
+	@webservice_jsonp
+	def GET(self, jsondatab64, SharedQueue, ThreadList, rgbm):
+		if not jsondatab64:
+			logging.warn('WebService_AudioSetColormap_And_State_JSONP missing jsondatab64 argument')
+			return 'WebService_AudioSetColormap_And_State_JSONP missing jsondatab64 argument'
+		logging.info('Attempting to set color map from json data')
+		if rgbm.current_audio_thread != None and rgbm.current_audio_thread.isAlive():
+			jsondata = base64.decodestring(jsondatab64)
+			jd = json.loads(jsondata)
+			newcolormap = CreateColormap(num_steps=jd['num_steps'], 
+				start_red=jd['start_red'], start_green=jd['start_green'], start_blue=jd['start_blue'],
+				end_red=jd['end_red'], end_green=jd['end_green'], end_blue=jd['end_blue'])
+			logging.info('Changed colormap on audio thread')
+			rgbm.current_audio_thread.colormap = newcolormap
+		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+
 
 class AudioBeat:
 	'''State class used to community with beat_handler thread'''
@@ -32,6 +137,28 @@ def beat_handler(beat, lights):
 
 class LEDMatrixAudio(LEDMatrixBase):
 	'''The Audio class does audio spectogram analysis of audio chunks from a wav file and displays the frequency volume on rgbmatrix leds'''
+	
+	webservice_definitions = [
+		WebServiceDefinition(
+			'/audioPlay/(.*)', 'WebService_PlayWav_And_State_JSONP', '/audioPlay/', 'wsAudioPlay'),
+		WebServiceDefinition(
+			'/audioStop/', 'WebService_AudioStop_And_State_JSONP', '/audioStop/', 'wsAudioStop'),
+		WebServiceDefinition(
+			'/audioTest/', 'WebService_AudioTest_And_State_JSONP', '/audioTest/', 'wsAudioTest'),
+		WebServiceDefinition(
+			'/audioToggleSingleLine/', 'WebService_AudioToggleSingleLine_And_State_JSONP', '/audioToggleSingleLine/', 'wsAudioToggleSL'),
+		WebServiceDefinition(
+			'/audioToggleBeat/', 'WebService_AudioToggleBeat_And_State_JSONP', '/audioToggleBeat/', 'wsAudioToggleBeat'),
+		WebServiceDefinition(
+			'/audioPause/', 'WebService_AudioPause_And_State_JSONP', '/audioPause/', 'wsAudioPause'),
+		WebServiceDefinition(
+			'/audioResume/', 'WebService_AudioResume_And_State_JSONP', '/audioResume/', 'wsAudioResume'),
+		WebServiceDefinition(
+			'/audioSetColormap/(.*)', 'WebService_AudioSetColormap_And_State_JSONP', '/audioSetColormap/', 'wsAudioSetColormap'),
+		WebServiceDefinition(
+			'/audioSetMaxFreq/(.*)', 'WebService_AudioSetMaxFreq_And_State_JSONP', '/audioSetMaxFreq/', 'wsAudioSetMaxFreq'),
+							]
+	
 	def __init__(self, name, callback_function, rgbmatrix, filepath, beatEnabled=None, singleLine=None, colormap=None):
 		LEDMatrixBase.__init__(self, name=name, callback_function=callback_function, rgbmatrix=rgbmatrix)
 		

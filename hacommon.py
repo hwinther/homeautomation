@@ -1,20 +1,14 @@
 #!/usr/bin/python
 import pickle, importlib, types, logging
 
-class StateQueueItem:
-	def __init__(self, func, *args):
-		self.func = func
-		self.args = args
-	def __call__(self):
-		self.func(*self.args)
-		
 class SerializableQueueItem:
 	def __init__(self, cls, func, *args):
 		self.cls = cls #class
 		self.func = func
 		self.args = args
 	def __call__(self):
-		if type(self.func) == types.FunctionType:
+		#logging.debug('SerializableQueueItem func type: ' + str(type(self.func)) + ' callable? ' + str(callable(self.func)))
+		if type(self.func) == types.FunctionType or callable(self.func):
 			self.func(*self.args)
 		elif type(self.func) == types.StringType:
 			logging.debug('this call needs to be processed in the main thread context before being called')
@@ -30,7 +24,7 @@ class ThreadList(list):
 
 class QueueList(list):
 	'''Yes, this strictly isnt necessary due to the nature of lists in python (thread safety), but it still feels better being explicit like this'''
-	pass #could potentially override the append method to only allow statequeueitems
+	pass #could potentially override the append method to only allow SerializableQueueItems
 	
 class ModuleDefinition:
 	def __init__(self, mod, cls):

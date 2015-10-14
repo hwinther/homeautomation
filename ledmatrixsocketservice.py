@@ -3,7 +3,7 @@ from ledmatrixbase import LEDMatrixBase
 import logging
 
 import socket, select, time, os, sys, threading
-from hacommon import QueueList, StateQueueItem, SerializableQueueItem
+from hacommon import QueueList, SerializableQueueItem, SerializableQueueItem
 
 SOCKET_SPLITCHARS = '\x01\x02\x03\x04' #needs to be set on both client and server side, used to determine the beginning and end of commands
 #TODO: the above and below should be fetched from config
@@ -45,25 +45,25 @@ class SocketCommandThread(threading.Thread):
 		logging.debug('handling cmd ' + str(ord(datacmd)) + ' [' + str(dataarg) + '] for ' + str(addr))
 		if ord(datacmd) == 126:
 			logging.info('Clearing screen')
-			self.parent.queue.append(StateQueueItem(self.parent.rgbm.Clear))
+			self.parent.queue.append(SerializableQueueItem(self.parent.__class__.__name__, self.parent.rgbm.Clear))
 		elif ord(datacmd) == 127 and len(cmd) == 6:
 			x, y, r, g, b = ord(dataarg[0]), ord(dataarg[1]), ord(dataarg[2]), ord(dataarg[3]), ord(dataarg[4])
 			logging.info('Setting matrix pixel at x=' + str(x) + ' y=' + str(y) + ' to color r=' + str(r) + ',g=' + str(g) + ',b=' + str(b))
-			self.parent.queue.append(StateQueueItem(self.parent.rgbm.SetPixel,x,y,r,g,b))
+			self.parent.queue.append(SerializableQueueItem(self.parent.__class__.__name__, self.parent.rgbm.SetPixel,x,y,r,g,b))
 		elif ord(datacmd) == 128:
 			logging.info('Displaying image')
-			self.parent.queue.append(StateQueueItem(self.parent.rgbm.SetMatrixFromImgBase64,dataarg))
+			self.parent.queue.append(SerializableQueueItem(self.parent.__class__.__name__, self.parent.rgbm.SetMatrixFromImgBase64,dataarg))
 		elif ord(datacmd) == 129:
 			filepath = '/home/pi/wav/' + dataarg
 			if not os.path.exists(filepath):
 				logging.info('(Play wav) File does not exist: ' + filepath)
 				return
 			logging.info('Playing wav file with audio visualizer:' + filepath)
-			self.parent.queue.append(StateQueueItem(self.parent.rgbm.AudioVisualize,filepath))
+			self.parent.queue.append(SerializableQueueItem(self.parent.__class__.__name__, self.parent.rgbm.AudioVisualize,filepath))
 		elif ord(datacmd) == 130:
 			#stop playing wav file
 			logging.info('Attempting to stop audio thread')
-			#self.queue.append(StateQueueItem(self.rgbm.StopAudioVisualize)) #will not work because the queuehandler is waiting for is_idle
+			#self.queue.append(SerializableQueueItem(self.rgbm.StopAudioVisualize)) #will not work because the queuehandler is waiting for is_idle
 			if self.parent.rgbm.is_audiovisualizing():
 				self.parent.rgbm.StopAudioVisualize()
 		elif ord(datacmd) == 131:

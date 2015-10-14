@@ -1,11 +1,32 @@
 #!/usr/bin/python
 from ledmatrixbase import LEDMatrixBase
+from webservicecommon import WebServiceDefinition, webservice_jsonp
+from hacommon import SerializableQueueItem
 import logging
 
 import base64, os, time, web
 from PIL import Image
 
+class WebService_ImageSetBase64Data_JSONP(object):
+	@webservice_jsonp
+	def GET(self, imageb64data, SharedQueue, ThreadList, rgbm):  #, imageb64data, SharedQueue, ThreadList):
+		#with imgb64, **kwargs: logging.debug(str(kwargs.keys()))
+		if not imageb64data:
+			logging.warn('WebService_ImageSetBase64Data_And_State_JSONP missing imageb64data argument') #could switch this for a json error object?
+			raise BaseException('WebService_ImageSetBase64Data_And_State_JSONP missing imageb64data argument') #this will in turn cause an exception in JS.. desired? IDK
+
+		logging.info('Attempting to set image from base64 data - test')
+		SharedQueue.append(SerializableQueueItem('LEDMatrixCore', rgbm.SetMatrixFromImgBase64, imageb64data))
+		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+
 class LEDMatrixImage(LEDMatrixBase):
+	'''Sets rgbmatrix to image based on HTML inline image format'''
+	
+	webservice_definitions = [
+			WebServiceDefinition(
+			'/ImageSetBase64Data/(.*)', 'WebService_ImageSetBase64Data_JSONP', '/ImageSetBase64Data/', 'wsImageSetBase64Data'),
+							]
+
 	def __init__(self, name, callback_function, rgbmatrix, imagebase64):
 		LEDMatrixBase.__init__(self, name=name, callback_function=callback_function, rgbmatrix=rgbmatrix)
 		self.imagebase64 = imagebase64
@@ -15,7 +36,7 @@ class LEDMatrixImage(LEDMatrixBase):
 		LEDMatrixBase.finalize(self)
 
 	def SetMatrixFromImgBase64(self): #rgbmatrix, self.imagebase64, callback_func=None, stop_event=None):
-		'''Sets rgbmatrix to image based on HTML inline image format'''
+		
 		ext = None
 		if self.imagebase64.find('data:image/png;base64,') != -1:
 			ext = 'png'

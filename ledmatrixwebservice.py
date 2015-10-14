@@ -3,7 +3,7 @@ from ledmatrixbase import LEDMatrixBase
 import logging
 
 import web, json, os, time, base64
-from hacommon import StateQueueItem
+from hacommon import SerializableQueueItem
 from ledmatrixcolor import CreateColormap
 
 class WebService_Index(object):
@@ -40,7 +40,7 @@ class WebService_PlayWav_And_State_JSONP(object):
 		#if rgbm.is_audiovisualizing(): #not sure if this will work properly - it did not, we got idle state with music playing
 		#	rgbm.StopAudioVisualize()
 		logging.info('WebService_PlayWav_And_State_JSONP Playing wav file with audio visualizer:' + filepath)
-		queue.append(StateQueueItem(rgbm.AudioVisualize, filepath))
+		queue.append(SerializableQueueItem(rgbm.AudioVisualize, filepath))
 		time.sleep(0.2) #give the main loop time to fetch this item (alternatively, can we push it directly to the SM?)
 		callback_name = web.input(callback='jsonCallback').callback
 		web.header('Content-Type', 'application/javascript') 
@@ -148,7 +148,7 @@ class WebService_ImageSetBase64Data_And_State_JSONP(object):
 		logging.info('Attempting to set image from base64 data')
 		callback_name = web.input(callback='jsonCallback').callback
 		web.header('Content-Type', 'application/javascript')
-		queue.append(StateQueueItem(rgbm.SetMatrixFromImgBase64, imageb64data))
+		queue.append(SerializableQueueItem(rgbm.SetMatrixFromImgBase64, imageb64data))
 		return '%s(%s)' % (callback_name, rgbm.get_json_state() )
 
 class WebServiceDefinition:
