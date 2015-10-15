@@ -43,6 +43,8 @@ class HomeAutomationQueueThread(HomeAutomationThread):
 				#logging.debug('Exec queue item ret: ' + `item_return_value`)
 				if item_return_value == None or item_return_value == True:
 					self.queue.remove(item)
+				elif item_return_value == False:
+					pass #handle this again later
 				else:
 					#try to translate the str in item into a function call within this context
 					logging.debug('attempting to translate function call in deserialized queue item: ' + item.func)
