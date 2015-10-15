@@ -68,10 +68,9 @@ class RGBMatrix(object):
 		self.to_idle()
 	
 	def on_enter_screensaver(self):
-		pass
 		#ScreensaverA(self.rgbmatrix)
 		#SplashScreen(self.rgbmatrix)
-		#self.to_idle()
+		self.to_idle() #stop overriding the damn state machine D:
 
 class LEDMatrixCore(HomeAutomationQueueThread):
 	"""@staticmethod
