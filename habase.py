@@ -39,7 +39,7 @@ class HomeAutomationQueueThread(HomeAutomationThread):
 			for item in [i for i in self.queue if i.cls == clsname]:
 				#TODO: should really be True.. but this will be used until the modules return the right default value via decorator
 				#logging.debug('Exec queue item: ' + `item`)
-				item_return_value = item()
+				item_return_value = self.exec_item(item)
 				#logging.debug('Exec queue item ret: ' + `item_return_value`)
 				if item_return_value == None or item_return_value == True:
 					self.queue.remove(item)
@@ -65,3 +65,5 @@ class HomeAutomationQueueThread(HomeAutomationThread):
 	def get_class_name(self):
 		return self.__class__.__name__
 	
+	def exec_item(self, item):
+		return item()
