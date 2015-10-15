@@ -1,14 +1,14 @@
 #!/usr/bin/python
 from habase import HomeAutomationQueueThread
 from hacommon import SerializableQueueItem
-from webservicecommon import WebServiceDefinition, webservice_jsonp
+from webservicecommon import WebServiceDefinition, webservice_jsonp, webservice_state_instances_add
 import logging, json
 
 import time, os
 
 class WebService_CecPowerOn(object):
 	@webservice_jsonp
-	def GET(self, id, SharedQueue):
+	def GET(self, id, SharedQueue, ThreadList):
 		_id = 0
 		try:
 			_id = int(id)
@@ -21,7 +21,7 @@ class WebService_CecPowerOn(object):
 
 class WebService_CecStandby(object):
 	@webservice_jsonp
-	def GET(self, id, SharedQueue):
+	def GET(self, id, SharedQueue, ThreadList):
 		_id = 0
 		try:
 			_id = int(id)
@@ -40,8 +40,8 @@ class HACec(HomeAutomationQueueThread):
 			'/cec/standby/(\d+)', 'WebService_CecStandby', '/cec/standby/', 'wsCecStandby'),
 		]
 
-	def __init__(self, name, callback_function, queue):
-		HomeAutomationQueueThread.__init__(self, name, callback_function, queue)
+	def __init__(self, name, callback_function, queue, threadlist):
+		HomeAutomationQueueThread.__init__(self, name, callback_function, queue, threadlist)
 		
 		self.devices = []
 		
@@ -61,6 +61,7 @@ class HACec(HomeAutomationQueueThread):
 		
 	def pre_processqueue(self):
 		logging.info('CEC module initialized')
+		webservice_state_instances_add(self.__class__.__name__, self.get_json_status)
 		self.updatedevices()
 		self.timecheck = time.time()
 		super(HACec, self).pre_processqueue()

@@ -16,12 +16,10 @@ def HACore():
 	sharedqueue = QueueList()
 	
 	modules = LoadModulesFromTuple(INSTALLED_APPS)
-	logging.debug('Modules loaded:')
-	for mod in modules:
-		logging.debug(mod)
-	
+	logging.debug('Loading modules:')
 	#create threads and so on
 	for mod in modules:
+		logging.info(mod)
 		mt = None
 		if issubclass(modules[mod].cls, HomeAutomationQueueThread):
 			mt = modules[mod].cls(name=mod, callback_function=None, queue=sharedqueue, threadlist=threadlist)

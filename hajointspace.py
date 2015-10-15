@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from habase import HomeAutomationQueueThread
 from hacommon import SerializableQueueItem
-from webservicecommon import WebServiceDefinition, webservice_jsonp
+from webservicecommon import WebServiceDefinition, webservice_jsonp, webservice_state_instances_add
 from hasettings import HA_JOINTSPACE_URI
 import logging, json
 
@@ -9,7 +9,7 @@ import time, os, urllib, urllib2
 
 class WebService_HARemoteKey(object):
 	@webservice_jsonp
-	def GET(self, keyname, SharedQueue):
+	def GET(self, keyname, SharedQueue, ThreadList):
 		logging.info('WebService_HARemoteKey: ' + keyname)
 		SharedQueue.append(SerializableQueueItem(HAJointSpace.__name__, CurrentInstance.remote_key, keyname)) #:\
 		return CurrentInstance.get_json_status()
@@ -22,8 +22,8 @@ class HAJointSpace(HomeAutomationQueueThread):
 			'/jointspace/remote/(\w+)', 'WebService_HARemoteKey', '/jointspace/remote', 'wsJSRemoteKey'),
 		]
 
-	def __init__(self, name, callback_function, queue, baseurl=None):
-		HomeAutomationQueueThread.__init__(self, name, callback_function, queue)
+	def __init__(self, name, callback_function, queue, threadlist, baseurl=None):
+		HomeAutomationQueueThread.__init__(self, name, callback_function, queue, threadlist)
 		if baseurl == None:
 			baseurl = HA_JOINTSPACE_URI
 		self.baseurl = baseurl
@@ -48,6 +48,7 @@ class HAJointSpace(HomeAutomationQueueThread):
 	
 	def pre_processqueue(self):
 		logging.info('JointSpace module initialized')
+		webservice_state_instances_add(self.__class__.__name__, self.get_json_status)
 		self.timecheck = time.time()
 		super(HAJointSpace, self).pre_processqueue()
 	

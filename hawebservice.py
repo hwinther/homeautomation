@@ -16,11 +16,10 @@ class WebService_Index(object):
 class WebService_State_JSONP(object): #TODO: should get all module states
 	@webservice_state_jsonp
 	def GET(self, **kwargs):
-		jsondata = '{'
+		jsonvalues = []
 		for key, value in kwargs.iteritems():
-			jsondata += '"' + key + '": ' + value() + ','
-		jsondata += '}'
-		return jsondata
+			jsonvalues.append(value())
+		return ', '.join(jsonvalues)
 
 class WebService_Definition_JSONP(object):
 	def GET(self):

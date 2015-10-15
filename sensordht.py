@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from habase import HomeAutomationThread
 from hacommon import SerializableQueueItem
-from webservicecommon import WebServiceDefinition, webservice_jsonp
+from webservicecommon import WebServiceDefinition, webservice_jsonp, webservice_state_instances_add
 from hasettings import SENSOR_DHT_SENSOR_TYPE, SENSOR_DHT_SENSOR_PIN
 import logging, json
 
@@ -9,7 +9,7 @@ import Adafruit_DHT, time
 
 class WebService_SensorList(object):
 	@webservice_jsonp
-	def GET(self, SharedQueue):
+	def GET(self, SharedQueue, ThreadList):
 		logging.info('WebService_SensorList listing available sensors')
 		return CurrentInstance.get_json_status()
 
@@ -34,6 +34,7 @@ class SensorDHT(HomeAutomationThread):
 
 	def run(self):
 		logging.info('DHT module initialized')
+		webservice_state_instances_add(self.get_class_name(), self.get_json_status)
 		timecheck = time.time()
 		while not self.stop_event.is_set():
 			time.sleep(1)
@@ -47,8 +48,8 @@ class SensorDHT(HomeAutomationThread):
 	def get_json_status(self):
 		a = []
 		for s in self.sensors:
-			a.append( {'Id':s.id, 'Type':s.__class__.__name__, 'Values':{'Temperature':s.temperature, 'Humidity':s.humidity} } )
-		return json.dumps({self.__class__.__name__: a})
+			a.append( {'Id':s.id, 'Type':s.get_class_name(), 'Values':{'Temperature':s.temperature, 'Humidity':s.humidity} } )
+		return json.dumps({self.get_class_name(): a})
 	
 	def get_class_name(self):
 		return self.__class__.__name__

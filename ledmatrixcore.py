@@ -80,7 +80,7 @@ class RGBMatrix(object):
 		if self.current_audio_thread != None and self.current_audio_thread.isAlive():
 			audiostate = self.current_audio_thread.filepath.split(os.sep)[-1] #try to get the filename out of the path
 			audiostate_paused = self.current_audio_thread.paused
-		return json.dumps({'state': self.state, 'audiostate': audiostate, 'audiostate_paused':audiostate_paused })
+		return json.dumps({self.__class__.__name__: {'state': self.state, 'audiostate': audiostate, 'audiostate_paused':audiostate_paused } })
 
 	def on_enter_settingpixel(self, x, y, r, g, b):
 		logging.debug("We've just entered state settingpixel!")
