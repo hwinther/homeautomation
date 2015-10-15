@@ -7,19 +7,23 @@ from hasettings import INSTALLED_APPS
 from hacommon import SerializableQueueItem, LoadModulesFromTuple
 from webservicecommon import WebServiceDefinition, WebServiceDefinitionList, webservicedecorator_init, webservice_state_jsonp
 
-class WebService_Index(object):
-	def GET(self, name):
-		if not name: 
-			name = 'world'
-		return 'Hello, ' + name + '!' + '<br><br>' + `globals()`
+#class WebService_Index(object):
+#	def GET(self, name):
+#		if not name: 
+#			name = 'world'
+#		return 'Hello, ' + name + '!' + '<br><br>' + `globals()`
 
 class WebService_State_JSONP(object):
 	@webservice_state_jsonp
 	def GET(self, **kwargs):
-		jsonvalues = []
+		jsonvalues = {}
 		for key, value in kwargs.iteritems():
-			jsonvalues.append(value())
-		return ', '.join(jsonvalues)
+			#jsonvalues.append(value())
+			jd = json.loads(value())
+			#logging.info('jd = ' + `jd`)
+			jsonvalues[jd.items()[0][0]] = jd.items()[0][1] #TODO: a nicer solution for this
+		#return '[' + ', '.join(jsonvalues) + ']'
+		return json.dumps(jsonvalues)
 
 class WebService_Definition_JSONP(object):
 	def GET(self):
@@ -83,7 +87,7 @@ class HAWebService(HomeAutomationQueueThread):
 				)
 		for wsdi in WebServiceDefinitions:
 			urls = urls + (wsdi.url, wsdi.cl)
-		urls = urls + ('/(.*)', 'WebService_Index')
+		#urls = urls + ('/(.*)', 'WebService_Index')
 		logging.debug(str(urls))
 		app = web.application(urls, globals())
 		logging.info('Starting up WebService app')

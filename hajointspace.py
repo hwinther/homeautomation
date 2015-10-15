@@ -11,19 +11,18 @@ class WebService_HARemoteKey(object):
 	@webservice_jsonp
 	def GET(self, keyname, SharedQueue, ThreadList):
 		logging.info('WebService_HARemoteKey: ' + keyname)
-		SharedQueue.append(SerializableQueueItem(HAJointSpace.__name__, CurrentInstance.remote_key, keyname)) #:\
+		SharedQueue.append(SerializableQueueItem(HAJointSpace.__name__, CurrentInstance.remote_key, keyname))
 		return CurrentInstance.get_json_status()
 
 class HAJointSpace(HomeAutomationQueueThread):
 	webservice_definitions = [
-		#WebServiceDefinition(
-		#	'/sensor/list', 'WebService_SensorList_JSONP', '/sensor/list', 'wsSensorList'),
 		WebServiceDefinition(
-			'/jointspace/remote/(\w+)', 'WebService_HARemoteKey', '/jointspace/remote', 'wsJSRemoteKey'),
+			'/jointspace/remote/(\w+)', 'WebService_HARemoteKey', '/jointspace/remote/', 'wsJSRemoteKey'),
 		]
 
 	def __init__(self, name, callback_function, queue, threadlist, baseurl=None):
 		HomeAutomationQueueThread.__init__(self, name, callback_function, queue, threadlist)
+		
 		if baseurl == None:
 			baseurl = HA_JOINTSPACE_URI
 		self.baseurl = baseurl
@@ -41,10 +40,12 @@ class HAJointSpace(HomeAutomationQueueThread):
 		logging.debug('Remote key: ' + str(key))
 		url = self.baseurl + '/1/input/key'
 		data = json.dumps( {'key': str(key) } )
+		logging.debug('jointspace opening url: ' + url)
 		req = urllib2.Request(url, data)
 		response = urllib2.urlopen(req)
 		content = response.read()
-		return content
+		#return content
+		return True
 	
 	def pre_processqueue(self):
 		logging.info('JointSpace module initialized')

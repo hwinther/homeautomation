@@ -31,6 +31,18 @@ class WebService_CecStandby(object):
 			logging.info('Cec power on: ' + id)
 			SharedQueue.append(SerializableQueueItem(HACec.__name__, CurrentInstance.cec_client_standby, _id))
 		return CurrentInstance.get_json_status()
+		
+class WebService_CecOsdText(object):
+	@webservice_jsonp
+	def GET(self, id, text, SharedQueue, ThreadList):
+		_id = 0
+		try:
+			_id = int(id)
+		except ValueError:
+			pass
+		logging.info('Cec set osd text on dev ' + id + ': ' + text)
+		SharedQueue.append(SerializableQueueItem(HACec.__name__, CurrentInstance.cec_client_osd, _id, text))
+		return CurrentInstance.get_json_status()
 
 class HACec(HomeAutomationQueueThread):
 	webservice_definitions = [
@@ -38,6 +50,8 @@ class HACec(HomeAutomationQueueThread):
 			'/cec/power_on/(\d+)', 'WebService_CecPowerOn', '/cec/power_on/', 'wsCecPowerOn'),
 		WebServiceDefinition(
 			'/cec/standby/(\d+)', 'WebService_CecStandby', '/cec/standby/', 'wsCecStandby'),
+		WebServiceDefinition(
+			'/cec/osdtext/(\d+)/(\w+)', 'WebService_CecOsdText', '/cec/osdtext/', 'wsCecOsdText'),
 		]
 
 	def __init__(self, name, callback_function, queue, threadlist):
@@ -82,12 +96,12 @@ class HACec(HomeAutomationQueueThread):
 		logging.debug('Standby: ' + str(id))
 		os.system('(echo standby ' + str(id) + '; echo q) | cec-client -d 7 -s')
 		
-	def cec_client_osd(self, txt):
+	def cec_client_osd(self, id, txt):
 		rng = range(ord('A'), ord('z')) #only allow a-z and space
 		rng.append(ord(' '))
 		txt = ''.join([i for i in txt if ord(i) in rng])
 		logging.debug('OSD text: ' + txt)
-		os.system('(echo osd 0 ' + txt + '; echo q) | cec-client -d 7 -s')
+		os.system('(echo osd ' + str(id) + ' ' + txt + '; echo q) | cec-client -d 7 -s')
 
 	def updatedevices(self):
 		pass
