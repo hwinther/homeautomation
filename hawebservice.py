@@ -13,7 +13,7 @@ class WebService_Index(object):
 			name = 'world'
 		return 'Hello, ' + name + '!' + '<br><br>' + `globals()`
 
-class WebService_State_JSONP(object): #TODO: should get all module states
+class WebService_State_JSONP(object):
 	@webservice_state_jsonp
 	def GET(self, **kwargs):
 		jsonvalues = []

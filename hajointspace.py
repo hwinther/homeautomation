@@ -63,7 +63,7 @@ class HAJointSpace(HomeAutomationQueueThread):
 '+OCEuQPqSSjIKee4MZMtAXMH/l9A3wO5E68UrKNkQz0OoGqhBkz8whjXqiOtw/RUE1yoCfU4ALhq'+\
 'CegsFyjzUGUZcwfEfYCZx1vS9sP3S/3Msix13AfUO2FU0n8l46hiXD21fjft8+EElANzB8qrYUC7'+\
 'N6j3iQzmDog9AMReeBHt24N6HQBH/4oZTTkwd+AJOCiLlC/o6gAAAAAASUVORK5CYII=' #testing..
-			#self.queue.append( SerializableQueueItem('RGBMatrix', 'rgbm.SetMatrixFromImgBase64', imageb64data) )
+			#self.queue.append( SerializableQueueItem('LEDMatrixCore', 'rgbm.SetMatrixFromImgBase64', imageb64data) )
 		super(HAJointSpace, self).post_processqueue()
 
 	def get_class_name(self):
