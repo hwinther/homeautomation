@@ -17,7 +17,7 @@ class WebService_ImageSetBase64Data_JSONP(object):
 
 		logging.info('Attempting to set image from base64 data - test')
 		SharedQueue.append(SerializableQueueItem('LEDMatrixCore', rgbm.SetMatrixFromImgBase64, imageb64data))
-		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+		return rgbm.get_json_state()
 
 class LEDMatrixImage(LEDMatrixBase):
 	'''Sets rgbmatrix to image based on HTML inline image format'''

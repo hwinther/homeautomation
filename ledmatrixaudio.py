@@ -26,7 +26,7 @@ class WebService_PlayWav_And_State_JSONP(object):
 		logging.info('WebService_PlayWav_And_State_JSONP Playing wav file with audio visualizer:' + filepath)
 		SharedQueue.append(SerializableQueueItem('LEDMatrixCore', rgbm.AudioVisualize, filepath))
 		time.sleep(0.2) #give the main loop time to fetch this item (alternatively, can we push it directly to the SM?)
-		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}' #TODO: a prettier solution for this maybe.. decorator?
+		return rgbm.get_json_state()
 
 class WebService_AudioStop_And_State_JSONP(object):
 	@webservice_jsonp
@@ -35,7 +35,7 @@ class WebService_AudioStop_And_State_JSONP(object):
 		if rgbm.is_audiovisualizing():
 			rgbm.StopAudioVisualize()
 		time.sleep(0.2) #give the main loop time to fetch this item (alternatively, can we push it directly to the SM?)
-		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+		return rgbm.get_json_state()
 		
 class WebService_AudioTest_And_State_JSONP(object):
 	@webservice_jsonp
@@ -45,7 +45,7 @@ class WebService_AudioTest_And_State_JSONP(object):
 			new_freq_step = int(rgbm.current_audio_thread.freq_step * 0.9)
 			logging.info('Setting audio thread freq_step to ' + str(new_freq_step) + ' making max freq ' + str(new_freq_step*31) )
 			rgbm.current_audio_thread.freq_step = new_freq_step
-		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+		return rgbm.get_json_state()
 		
 class WebService_AudioSetMaxFreq_And_State_JSONP(object):
 	@webservice_jsonp
@@ -58,7 +58,7 @@ class WebService_AudioSetMaxFreq_And_State_JSONP(object):
 			new_freq_step = int(int(freqmax) / 32.0) #TODO: get this from screen width config value
 			logging.info('Setting audio thread freqmax to ' + str(freqmax) + ' making freq_step ' + str(new_freq_step) )
 			rgbm.current_audio_thread.freq_step = new_freq_step
-		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+		return rgbm.get_json_state()
 		
 class WebService_AudioToggleSingleLine_And_State_JSONP(object):
 	@webservice_jsonp
@@ -67,7 +67,7 @@ class WebService_AudioToggleSingleLine_And_State_JSONP(object):
 		if rgbm.current_audio_thread != None and rgbm.current_audio_thread.isAlive():
 			logging.info('Toggling singleline on audio thread')
 			rgbm.current_audio_thread.singleLine = not rgbm.current_audio_thread.singleLine
-		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+		return rgbm.get_json_state()
 		
 class WebService_AudioToggleBeat_And_State_JSONP(object):
 	@webservice_jsonp
@@ -76,7 +76,7 @@ class WebService_AudioToggleBeat_And_State_JSONP(object):
 		if rgbm.current_audio_thread != None and rgbm.current_audio_thread.isAlive():
 			logging.info('Toggling beat detection on audio thread')
 			rgbm.current_audio_thread.beatEnabled = not rgbm.current_audio_thread.beatEnabled
-		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+		return rgbm.get_json_state()
 		
 class WebService_AudioPause_And_State_JSONP(object):
 	@webservice_jsonp
@@ -85,7 +85,7 @@ class WebService_AudioPause_And_State_JSONP(object):
 		if rgbm.current_audio_thread != None and rgbm.current_audio_thread.isAlive():
 			logging.info('Pausing audio thread')
 			rgbm.current_audio_thread.paused = True
-		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+		return rgbm.get_json_state()
 		
 class WebService_AudioResume_And_State_JSONP(object):
 	@webservice_jsonp
@@ -94,7 +94,7 @@ class WebService_AudioResume_And_State_JSONP(object):
 		if rgbm.current_audio_thread != None and rgbm.current_audio_thread.isAlive():
 			logging.info('Resuming audio thread')
 			rgbm.current_audio_thread.paused = False
-		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+		return rgbm.get_json_state()
 		
 class WebService_AudioSetColormap_And_State_JSONP(object):
 	@webservice_jsonp
@@ -111,7 +111,7 @@ class WebService_AudioSetColormap_And_State_JSONP(object):
 				end_red=jd['end_red'], end_green=jd['end_green'], end_blue=jd['end_blue'])
 			logging.info('Changed colormap on audio thread')
 			rgbm.current_audio_thread.colormap = newcolormap
-		return '{"LEDMatrixCore": ' + rgbm.get_json_state() + '}'
+		return rgbm.get_json_state()
 
 
 class AudioBeat:
