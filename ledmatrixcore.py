@@ -132,7 +132,8 @@ class LEDMatrixCore(HomeAutomationQueueThread):
 		
 	def exec_item(self, item):
 		try:
-			super(LEDMatrixCore, self).exec_item(item) #while this might look strange its the proper way of overriding methods
+			if self.rgbm.is_idle(): #dont process more items from the queue unless the state machine is back to idle
+				super(LEDMatrixCore, self).exec_item(item) #while this might look strange its the proper way of overriding methods
 		except MachineError as e:
 			logging.warn('Caught state exception (retrying later) ' + str(sys.exc_info()[0]) )
 			return False
