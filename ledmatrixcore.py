@@ -22,8 +22,9 @@ from ledmatrixanimations import SplashScreen, ScreensaverA, CylonScan
 
 #TODO: should perhaps be merged with LEDMatrixCore class so as to be more in line with other modules (self contained and inheriting from habase*)
 class RGBMatrix(object):
-	def __init__(self, rgbmatrix, threadlist):
+	def __init__(self, rgbmatrix, sharedqueue, threadlist):
 		self.rgbmatrix = rgbmatrix
+		self.sharedqueue = sharedqueue
 		self.threadlist = threadlist
 		self.current_audio_thread = None
 
@@ -47,7 +48,7 @@ class RGBMatrix(object):
 
 	def on_enter_audiovisualizing(self, filename):
 		logging.debug("We've just entered state audiovisualizing!")
-		lma = LEDMatrixAudio(name='Audio', rgbmatrix=self.rgbmatrix, callback_function=self.to_idle, filepath=filename) #which one is it?
+		lma = LEDMatrixAudio(name='Audio', rgbmatrix=self.rgbmatrix, sharedqueue=self.sharedqueue, callback_function=self.to_idle, filepath=filename) #which one is it?
 		lma.start()
 		self.current_audio_thread = lma
 		self.threadlist.append(lma)
@@ -88,7 +89,7 @@ class LEDMatrixCore(HomeAutomationQueueThread):
 
 		logging.info('LEDMatrixCore initialized')
 		self.rgbmatrix = Adafruit_RGBmatrix(32, 1)
-		self.rgbm = RGBMatrix(self.rgbmatrix, self.threadlist)
+		self.rgbm = RGBMatrix(self.rgbmatrix, self.queue, self.threadlist)
 	
 		self.transitions = [
 			{ 'trigger': 'SetPixel', 'source': 'idle', 'dest': 'settingpixel' },

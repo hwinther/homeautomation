@@ -8,7 +8,7 @@ import alsaaudio as aa
 from struct import unpack
 from datetime import datetime
 import numpy as np
-import wave, sys, time, os
+import wave, sys, time, os, base64, json
 from ledmatrixcolor import CreateColormap
 
 class WebService_PlayWav_And_State_JSONP(object):
@@ -122,17 +122,14 @@ class AudioBeat:
 
 def beat_handler(beat, lights):
 	'''beat_handler thread loop, should do something when a beat has been detected in audio thread'''
-	lights[0].on = True
+	#lights[0].on = True
 	while 1:
 		if beat.activate == None: break #end thread
-		#if beat.activate:
-		#	print 'beat lights activated'
-		#	for l in lights:
-		#		l.on = True
-		#		l.on = False
-		#		break
-		#	beat.activate=False
-		lights[0].xy = beat.xy
+		if beat.activate:
+			print 'beat lights activated'
+			
+			beat.activate=False
+		#lights[0].xy = beat.xy
 		time.sleep(0.1)
 
 class LEDMatrixAudio(LEDMatrixBase):
@@ -159,9 +156,10 @@ class LEDMatrixAudio(LEDMatrixBase):
 			'/audioSetMaxFreq/(.*)', 'WebService_AudioSetMaxFreq_And_State_JSONP', '/audioSetMaxFreq/', 'wsAudioSetMaxFreq'),
 							]
 	
-	def __init__(self, name, callback_function, rgbmatrix, filepath, beatEnabled=None, singleLine=None, colormap=None):
+	def __init__(self, name, callback_function, rgbmatrix, sharedqueue, filepath, beatEnabled=None, singleLine=None, colormap=None):
 		LEDMatrixBase.__init__(self, name=name, callback_function=callback_function, rgbmatrix=rgbmatrix)
 		
+		self.sharedqueue = sharedqueue
 		self.filepath = filepath
 		self.beatEnabled = beatEnabled == True #coalesce None/False into False and keep True.. true
 		self.singleLine = singleLine == True
