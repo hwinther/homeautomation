@@ -33,8 +33,9 @@ class HAJointSpace(HomeAutomationQueueThread):
 	#def run(self):
 	#	super(HAJointSpace, self).run()
 	
-	#def get_json_status(self):
-	#	return super(HAJointSpace, self).get_json_status()
+	def get_json_status(self):
+		#TODO: add cached values for volume and other relevant things
+		return json.dumps({self.get_class_name(): []})
 	
 	def pre_processqueue(self):
 		logging.info('JointSpace module initialized')

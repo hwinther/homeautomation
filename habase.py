@@ -16,7 +16,7 @@ class HomeAutomationThread(threading.Thread):
 			self.callback_function()
 	
 	def get_json_status(self):
-		return json.dumps({self.__class__.__name__: []})
+		return json.dumps({self.get_class_name(): []})
 		
 	def get_class_name(self):
 		return self.__class__.__name__
