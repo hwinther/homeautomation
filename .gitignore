@@ -61,3 +61,6 @@ target/
 
 # Active config
 hasettings.py
+
+#pycharms folder
+.idea/
