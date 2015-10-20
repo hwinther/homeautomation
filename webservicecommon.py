@@ -44,23 +44,60 @@ class WSParam(object):
 # endregion
 
 def webservicedecorator_globals_add(**kwargs):
+    """
+    This decorator helper method will change the incoming parameters for all modules in an instance and is thus deprecated
+    It is not a decorator per se but shares global namespace with it and is thus able to append to its global variable
+    :param kwargs:
+    :return:
+    """
     global webservice_globals
     for key, value in kwargs.iteritems():
         webservice_globals[key] = value
 
 def webservice_state_instances_add(name, inst):
+    """
+    Module registration for the state decorator (helps webservice thread know which modules are relevant for the overall system state output)
+    :param name:
+    :param inst:
+    :return:
+    """
     global webservice_state_instances
     webservice_state_instances[name] = inst
 
-def webservicedecorator_init(**kwargs):
-    global webservice_globals
+def webservice_class_instances_add(classname, classinstance):
+    """
+    Module registration to be done by the modules themselves after init
+    This is required to use the shared web methods WebService_Dynamic_Set & WebService_Dynamic_Get as callbacks
+    At runtime it will be passed on to the decorated GET call
+    :param name:
+    :param inst:
+    :return:
+    """
+    global webservice_module_class_instances
+    webservice_module_class_instances[classname.lower()] = classinstance
+
+def webservice_hawebservice_init(**kwargs):
+    """
+    Initializer & shorthand helper for webservice class similar to webservice_state_instances_add
+    Registers "common" global variables SharedQueue and ThreadList - now deprecated to decopule/unconfuse application flow and variable sharing in general
+    :param kwargs:
+    :return:
+    """
+    global webservice_globals # now deprecated
     webservice_globals = {}
     for key, value in kwargs.iteritems():
         webservice_globals[key] = value # perhaps just clone/copy the kwargs dict directly?
     global webservice_state_instances
     webservice_state_instances = {}
+    global webservice_module_class_instances
+    webservice_module_class_instances = {}
 
 def webservice_state_jsonp(f):
+    """
+    Decorator for the module overall state (this will be polled by a browser to update all component states in the view)
+    :param f:
+    :return:
+    """
     def decorated(*args, **kwargs):
         callback_name = web.input(callback='jsonCallback').callback
         web.header('Content-Type', 'application/javascript')
@@ -70,29 +107,48 @@ def webservice_state_jsonp(f):
     return decorated
 
 def webservice_json(f):
+    """
+    decorator for GET methods in webservice classes
+    :param f:
+    :return: json
+    """
     def decorated(*args, **kwargs):
         web.header('Content-Type', 'application/javascript')
-        #for key, value in webservice_globals.iteritems():
-        #    kwargs[key] = value
-        logging.info('webservice_state_json2 args: ' + str(args))
-        logging.info('webservice_state_json2 kwargs: ' + str(kwargs.keys()))
-        logging.info('webservice_state_json2 func: ' + str(dir(args[0])))
-        logging.info('webservice_state_json2 class: ' + str(args[0].__class__))
-        logging.info('webservice_state_json2 module: ' + str(args[0].__module__))
-        return '%s' % (f(*args, **kwargs))
+        decorator = args[0]
+        modulename = decorator.__module__
+
+        if modulename in webservice_module_class_instances.keys():
+            decorator.currentInstance = webservice_module_class_instances[modulename]
+        else:
+            logging.warn('No class instance reference found for ' + modulename)
+            decorator.currentInstance = None
+
+        retval = f(*args, **kwargs)
+        return '%s' % (retval)
     return decorated
 
 def webservice_jsonp(f):
+    """
+    decorator for GET methods in webservice classes (jsonp variant - cross site)
+    :param f:
+    :return: jsonp
+    """
     def decorated(*args, **kwargs):
         callback_name = web.input(callback='jsonCallback').callback
         web.header('Content-Type', 'application/javascript')
-        # kwargs['SharedQueue'] = SharedQueue #idk
-        for key, value in webservice_globals.iteritems():
-            kwargs[key] = value
-        # logging.debug('decorated: ' + str(kwargs.keys()))
+        # shortcut? call above decorator to get returned data and format it with %s(%s) after.. data = webservice_json(f)
+        decorator = args[0]
+        modulename = decorator.__module__
+
+        # global webservice_module_class_instances
+        if modulename in webservice_module_class_instances.keys():
+            decorator.currentInstance = webservice_module_class_instances[modulename]
+        else:
+            logging.warn('No class instance reference found for ' + modulename)
+            decorator.currentInstance = None
+
         retval = f(*args, **kwargs)
-        # logging.debug('decorator got retval: ' + retval)
-        return '%s(%s)' % (callback_name, retval )
+        return '%s(%s)' % (callback_name, retval)
     return decorated
 
 def ws_register_class(cls):
@@ -126,32 +182,21 @@ class WebService_Dynamic_Set(object):
 
     @webservice_jsonp
     def GET(self, *args, **kwargs):
-        if not 'SharedQueue' in kwargs.keys() or not 'ThreadList' in kwargs.keys():
-            raise Exception('Missing SharedQueue and/or ThreadList in kwargs')
-        SharedQueue = kwargs['SharedQueue']
-        # ThreadList = kwargs['ThreadList']
-        # passed_kwargs = {}
-        # i = 0
-        # for arg in args:
-        #     if i > len(self.argnames):
-        #         break # no more matching arg names
-        #     # TODO: raise exception when theres an argument mismatch?
-        #     logging.info('argnames: ' + str(self.argnames))
-        #     argname = self.argnames[i]
-        #     passed_kwargs[argname] = arg
-        #     i += 1
-        # from pprint import pformat
-        # logging.info(pformat(web.ctx))
-        # logging.info('PATH_INFO - ' + web.ctx['environ']['PATH_INFO'])
         path_parts = web.ctx['environ']['PATH_INFO'].split('/') # ['', 'HAJointSpace', 'set_input_key', 'Mute']
         if len(path_parts) >= 3:
             self.parentClass = path_parts[1]
             self.methodname = path_parts[2]
         # logging.info('Dynamic WS Set call - %s %s %s' %(self.parentClass, self.methodname, getattr(self.currentInstance, self.methodname)) )
-        sqi = SerializableQueueItem(self.parentClass, getattr(self.currentInstance, self.methodname), *args)
-        # logging.info('sqi args: ' + str(sqi.args) )
-        SharedQueue.append(sqi) # **passed_kwargs
+        # SharedQueue.append(sqi) TODO: this is no longer happening at all
+        if hasattr(self.currentInstance, 'queue'):
+            logging.info('adding action to queue for ' + self.parentClass)
+            sqi = SerializableQueueItem(self.parentClass, getattr(self.currentInstance, self.methodname), *args)
+            self.currentInstance.queue.append(sqi)
+        else:
+            logging.info('exec action directly for ' + self.parentClass)
+            getattr(self.currentInstance, self.methodname)(*args)
         return self.currentInstance.get_json_status()
+        # return state as it was before action is likely to have taken place.. may not be that useful
 
 class WebService_Dynamic_Get(object):
     currentInstance = None

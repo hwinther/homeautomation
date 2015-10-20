@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import logging, web, json, types, traceback, copy
 from habase import HomeAutomationQueueThread
-from webservicecommon import WebServiceDefinition, WebServiceDefinitionList, webservicedecorator_init, webservice_state_jsonp
+from webservicecommon import WebServiceDefinition, WebServiceDefinitionList, webservice_hawebservice_init, webservice_state_jsonp
 
 class WebService_State_JSONP(object):
     @webservice_state_jsonp
@@ -85,7 +85,7 @@ class HAWebService(HomeAutomationQueueThread):
         global ThreadList
         ThreadList = threadlist
 
-        webservicedecorator_init(SharedQueue=SharedQueue, ThreadList=ThreadList)
+        webservice_hawebservice_init(SharedQueue=SharedQueue, ThreadList=ThreadList)
 
     def run(self):
         urls = (

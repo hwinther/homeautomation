@@ -2,86 +2,86 @@
 from ledmatrixbase import LEDMatrixBase
 from webservicecommon import WebServiceDefinition, webservice_jsonp
 from hacommon import SerializableQueueItem
-import logging
-
-import base64, os, time, web
+import logging, base64, os, time
 from PIL import Image
+import numpy as np
 
 class WebService_ImageSetBase64Data_JSONP(object):
-	@webservice_jsonp
-	def GET(self, imageb64data, SharedQueue, ThreadList, rgbm):  #, imageb64data, SharedQueue, ThreadList):
-		#with imgb64, **kwargs: logging.debug(str(kwargs.keys()))
-		if not imageb64data:
-			logging.warn('WebService_ImageSetBase64Data_And_State_JSONP missing imageb64data argument') #could switch this for a json error object?
-			raise BaseException('WebService_ImageSetBase64Data_And_State_JSONP missing imageb64data argument') #this will in turn cause an exception in JS.. desired? IDK
+    @webservice_jsonp
+    def GET(self, imageb64data):
+        SharedQueue = self.currentInstance.queue
+        rgbm = self.currentInstance.rgbm
+        if not imageb64data:
+            logging.warn('WebService_ImageSetBase64Data_And_State_JSONP missing imageb64data argument') #could switch this for a json error object?
+            raise BaseException('WebService_ImageSetBase64Data_And_State_JSONP missing imageb64data argument') #this will in turn cause an exception in JS.. desired? IDK
 
-		logging.info('Attempting to set image from base64 data - test')
-		SharedQueue.append(SerializableQueueItem('LEDMatrixCore', rgbm.SetMatrixFromImgBase64, imageb64data))
-		return rgbm.get_json_state()
+        logging.info('Attempting to set image from base64 data - test')
+        SharedQueue.append(SerializableQueueItem('LEDMatrixCore', rgbm.SetMatrixFromImgBase64, imageb64data))
+        return rgbm.get_json_state()
 
 class LEDMatrixImage(LEDMatrixBase):
-	'''Sets rgbmatrix to image based on HTML inline image format'''
-	
-	webservice_definitions = [
-			WebServiceDefinition(
-			'/ImageSetBase64Data/(.*)', 'WebService_ImageSetBase64Data_JSONP', '/ImageSetBase64Data/', 'wsImageSetBase64Data'),
-							]
+    '''Sets rgbmatrix to image based on HTML inline image format'''
 
-	def __init__(self, name, callback_function, rgbmatrix, imagebase64):
-		LEDMatrixBase.__init__(self, name=name, callback_function=callback_function, rgbmatrix=rgbmatrix)
-		self.imagebase64 = imagebase64
+    webservice_definitions = [
+            WebServiceDefinition(
+            '/ImageSetBase64Data/(.*)', 'WebService_ImageSetBase64Data_JSONP', '/ImageSetBase64Data/', 'wsImageSetBase64Data'),
+                            ]
 
-	def run(self):
-		self.SetMatrixFromImgBase64()
-		LEDMatrixBase.finalize(self)
+    def __init__(self, name, callback_function, rgbmatrix, imagebase64):
+        LEDMatrixBase.__init__(self, name=name, callback_function=callback_function, rgbmatrix=rgbmatrix)
+        self.imagebase64 = imagebase64
 
-	def SetMatrixFromImgBase64(self): #rgbmatrix, self.imagebase64, callback_func=None, stop_event=None):
-		
-		ext = None
-		if self.imagebase64.find('data:image/png;base64,') != -1:
-			ext = 'png'
-			imgdatacleanb64 = self.imagebase64.replace('data:image/png;base64,', '')
-		if self.imagebase64.find('data:image/gif;base64,') != -1:
-			ext = 'gif'
-			imgdatacleanb64 = self.imagebase64.replace('data:image/gif;base64,', '')
-		if ext == None:
-			logging.info('invalid image data: ' + self.imagebase64)
-			return
-		if ext in ['png', 'jpg', 'jpeg']:
-			logging.info('displaying ' + ext)
-			imgdata = base64.decodestring(imgdatacleanb64)
-			open('/tmp/matrix.temp.'+ext, 'wb').write(imgdata)
-			os.system('convert /tmp/matrix.temp.' + ext + ' png32:/tmp/matrix.temp.32.png')
-			image = Image.open('/tmp/matrix.temp.32.png')
-			image.load()
-			img = image.resize((32,32))
-			# If image has an alpha channel
-			if image.mode == 'RGBA':
-				logging.debug('converting RGBA image')
-				img = pure_pil_alpha_to_color_v2(img) #remove alpha layer
-			self.rgbmatrix.SetImage(img.im.id, 0, 0)
-		elif ext == 'gif':
-			logging.info('displaying gif')
-			imgdata = base64.decodestring(imgdatacleanb64)
-			open('/tmp/matrix.temp.'+ext, 'wb').write(imgdata)
-			image = Image.open('/tmp/matrix.temp.'+ext)
-			frame=1
-			while self.stop_event == None or not self.stop_event.is_set():
-				logging.debug('frame: ' + str(frame))
-				img = image.resize((32,32))
-				animframe_in='/tmp/matrix.animframe%d.png' %(frame)
-				animframe_out='/tmp/matrix.animframe%d.out.png' %(frame)
-				img.save('/tmp/matrix.animframe%d.png' %(frame) )
-				os.system('convert ' + animframe_in + ' png32:' + animframe_out)
-				img = Image.open(animframe_out)
-				img.load()
-				self.rgbmatrix.SetImage(img.im.id, 0, 0)
-				time.sleep(0.05)
-				try: image.seek(image.tell() + 1)
-				except:
-					logging.debug('detected end at frame: ' + str(frame))
-					break
-				frame+=1
+    def run(self):
+        self.SetMatrixFromImgBase64()
+        LEDMatrixBase.finalize(self)
+
+    def SetMatrixFromImgBase64(self): #rgbmatrix, self.imagebase64, callback_func=None, stop_event=None):
+
+        ext = None
+        if self.imagebase64.find('data:image/png;base64,') != -1:
+            ext = 'png'
+            imgdatacleanb64 = self.imagebase64.replace('data:image/png;base64,', '')
+        if self.imagebase64.find('data:image/gif;base64,') != -1:
+            ext = 'gif'
+            imgdatacleanb64 = self.imagebase64.replace('data:image/gif;base64,', '')
+        if ext == None:
+            logging.info('invalid image data: ' + self.imagebase64)
+            return
+        if ext in ['png', 'jpg', 'jpeg']:
+            logging.info('displaying ' + ext)
+            imgdata = base64.decodestring(imgdatacleanb64)
+            open('/tmp/matrix.temp.'+ext, 'wb').write(imgdata)
+            os.system('convert /tmp/matrix.temp.' + ext + ' png32:/tmp/matrix.temp.32.png')
+            image = Image.open('/tmp/matrix.temp.32.png')
+            image.load()
+            img = image.resize((32,32))
+            # If image has an alpha channel
+            if image.mode == 'RGBA':
+                logging.debug('converting RGBA image')
+                img = pure_pil_alpha_to_color_v2(img) #remove alpha layer
+            self.rgbmatrix.SetImage(img.im.id, 0, 0)
+        elif ext == 'gif':
+            logging.info('displaying gif')
+            imgdata = base64.decodestring(imgdatacleanb64)
+            open('/tmp/matrix.temp.'+ext, 'wb').write(imgdata)
+            image = Image.open('/tmp/matrix.temp.'+ext)
+            frame=1
+            while self.stop_event == None or not self.stop_event.is_set():
+                logging.debug('frame: ' + str(frame))
+                img = image.resize((32,32))
+                animframe_in='/tmp/matrix.animframe%d.png' %(frame)
+                animframe_out='/tmp/matrix.animframe%d.out.png' %(frame)
+                img.save('/tmp/matrix.animframe%d.png' %(frame) )
+                os.system('convert ' + animframe_in + ' png32:' + animframe_out)
+                img = Image.open(animframe_out)
+                img.load()
+                self.rgbmatrix.SetImage(img.im.id, 0, 0)
+                time.sleep(0.05)
+                try: image.seek(image.tell() + 1)
+                except:
+                    logging.debug('detected end at frame: ' + str(frame))
+                    break
+                frame+=1
 
 def alpha_to_color(image, color=(255, 255, 255)):
     """Set all fully transparent pixels of an RGBA image to the specified color.

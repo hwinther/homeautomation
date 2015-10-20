@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from habase import HomeAutomationQueueThread
-from webservicecommon import webservice_state_instances_add, WebService_Dynamic_Set, WebService_Dynamic_Get, WSBinding, WSParam, ws_register_class, ws_register_definition
+from webservicecommon import webservice_state_instances_add, WebService_Dynamic_Set, WebService_Dynamic_Get, WSBinding, WSParam, ws_register_class, ws_register_definition, webservice_class_instances_add
 import logging, json
 import time, serial
 
@@ -13,12 +13,12 @@ import time, serial
 #         return CurrentInstance.get_json_status()
 class WebService_SerialIR_Dynamic_Set(WebService_Dynamic_Set):
     def __init__(self, *args, **kwargs):
-        self.currentInstance = CurrentInstance
+        # self.currentInstance = CurrentInstance
         super(WebService_SerialIR_Dynamic_Set, self).__init__(*args, **kwargs)
 
 class WebService_SerialIR_Dynamic_Get(WebService_Dynamic_Get):
     def __init__(self, *args, **kwargs):
-        self.currentInstance = CurrentInstance
+        # self.currentInstance = CurrentInstance
         super(WebService_SerialIR_Dynamic_Get, self).__init__(*args, **kwargs)
 # endregion
 
@@ -37,8 +37,8 @@ class HASerialIR(HomeAutomationQueueThread):
 
         self.Serial = serial.Serial('/dev/ttyACM1', 9600, timeout=2)
 
-        global CurrentInstance
-        CurrentInstance = self
+        # global CurrentInstance
+        # CurrentInstance = self
 
     #def run(self):
     #	super(HASerialIR, self).run()
@@ -49,6 +49,7 @@ class HASerialIR(HomeAutomationQueueThread):
     def pre_processqueue(self):
         logging.info('Serial IR module initialized: ' + self.Serial.readline() )
         webservice_state_instances_add(self.__class__.__name__, self.get_json_status)
+        webservice_class_instances_add(self.get_class_name(), self)
         self.timecheck = time.time()
         super(HASerialIR, self).pre_processqueue()
 

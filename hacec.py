@@ -2,22 +2,22 @@
 import logging, json, time, os
 from habase import HomeAutomationQueueThread
 from hacommon import SerializableQueueItem
-from webservicecommon import WebServiceDefinition, webservice_jsonp, webservice_state_instances_add, WebService_Dynamic_Get, WebService_Dynamic_Set, WSBinding, WSParam, ws_register_class, ws_register_definition
+from webservicecommon import WebServiceDefinition, webservice_jsonp, webservice_state_instances_add, WebService_Dynamic_Get, WebService_Dynamic_Set, webservice_class_instances_add, WSBinding, WSParam, ws_register_class, ws_register_definition
 
 # region Web methods
 class WebService_Cec_Dynamic_Set(WebService_Dynamic_Set):
     def __init__(self, *args, **kwargs):
-        self.currentInstance = CurrentInstance
+        # self.currentInstance = CurrentInstance
         super(WebService_Cec_Dynamic_Set, self).__init__(*args, **kwargs)
 
 class WebService_Cec_Dynamic_Get(WebService_Dynamic_Get):
     def __init__(self, *args, **kwargs):
-        self.currentInstance = CurrentInstance
+        # self.currentInstance = CurrentInstance
         super(WebService_Cec_Dynamic_Get, self).__init__(*args, **kwargs)
 
 class WebService_CecPowerOn(object):
     @webservice_jsonp
-    def GET(self, id, SharedQueue, ThreadList):
+    def GET(self, id):
         _id = 0
         try:
             _id = int(id)
@@ -25,12 +25,12 @@ class WebService_CecPowerOn(object):
             pass
         if 1:
             logging.info('Cec power on: ' + id)
-            SharedQueue.append(SerializableQueueItem(HACec.__name__, CurrentInstance.cec_client_power_on, _id)) #:\
-        return CurrentInstance.get_json_status()
+            self.currentInstance.queue.append(SerializableQueueItem(HACec.__name__, self.currentInstance.cec_client_power_on, _id)) #:\
+        return self.currentInstance.get_json_status()
 
 class WebService_CecStandby(object):
     @webservice_jsonp
-    def GET(self, id, SharedQueue, ThreadList):
+    def GET(self, id):
         _id = 0
         try:
             _id = int(id)
@@ -38,20 +38,20 @@ class WebService_CecStandby(object):
             pass
         if 1:
             logging.info('Cec power on: ' + id)
-            SharedQueue.append(SerializableQueueItem(HACec.__name__, CurrentInstance.cec_client_standby, _id))
-        return CurrentInstance.get_json_status()
+            self.currentInstance.queue.append(SerializableQueueItem(HACec.__name__, self.currentInstance.cec_client_standby, _id))
+        return self.currentInstance.get_json_status()
 
 class WebService_CecOsdText(object):
     @webservice_jsonp
-    def GET(self, id, text, SharedQueue, ThreadList):
+    def GET(self, id, text):
         _id = 0
         try:
             _id = int(id)
         except ValueError:
             pass
         logging.info('Cec set osd text on dev ' + id + ': ' + text)
-        SharedQueue.append(SerializableQueueItem(HACec.__name__, CurrentInstance.cec_client_osd, _id, text))
-        return CurrentInstance.get_json_status()
+        self.currentInstance.queue.append(SerializableQueueItem(HACec.__name__, self.currentInstance.cec_client_osd, _id, text))
+        return self.currentInstance.get_json_status()
 # endregion
 
 class HACec(HomeAutomationQueueThread):
@@ -70,8 +70,8 @@ class HACec(HomeAutomationQueueThread):
 
         self.devices = []
 
-        global CurrentInstance
-        CurrentInstance = self
+        # global CurrentInstance
+        # CurrentInstance = self
 
     def get_json_status(self):
         cecdevices = []
@@ -87,6 +87,7 @@ class HACec(HomeAutomationQueueThread):
     def pre_processqueue(self):
         logging.info('CEC module initialized')
         webservice_state_instances_add(self.get_class_name(), self.get_json_status)
+        webservice_class_instances_add(self.get_class_name(), self)
         self.updatedevices()
         self.timecheck = time.time()
         super(HACec, self).pre_processqueue()
@@ -126,4 +127,3 @@ class HACec(HomeAutomationQueueThread):
         #self.devices = cec.list_devices()
         #del(cec)
         #d[0].osd_string
-

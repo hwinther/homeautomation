@@ -62,6 +62,9 @@ def HACore():
                     if not _thread.isAlive():
                         logging.info('Removing dead thread: ' + _thread.name)
                         threadlist.remove(_thread)
+                        # TODO: call other module cleanup (e.g. remove instance ref in webservice globals)
+                        # webservice_state_instances
+                        # and webservice_class_instances
 
         except KeyboardInterrupt:
             logging.info('Detected ctrl+c, exiting main loop and stopping all threads')
@@ -69,6 +72,7 @@ def HACore():
         except:
             logging.critical("Unexpected error in main loop (exiting): " + traceback.format_exc() )
             break
+
     logging.debug('Stopping all threads')
     for _thread in threadlist:
         _thread.stop_event.set() # telling the threads to stop

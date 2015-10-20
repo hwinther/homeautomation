@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import logging, json
 from habase import HomeAutomationQueueThread
-from webservicecommon import webservice_json, WebServiceDefinition
+from webservicecommon import webservice_json, WebServiceDefinition, webservice_class_instances_add
 
 dataset = [
     {'id': 1,
@@ -56,7 +56,6 @@ class martin_testws_data(object):
     @webservice_json
     def GET(self, page):
         logging.info('WebService_TestWS reading up to page ' + page)
-        # logging.info('test ' + str(CurrentInstance))
         _page = 0
         try:
             _page = int(page)
@@ -73,14 +72,17 @@ class HATestApp(HomeAutomationQueueThread):
     webservice_definitions = [
         WebServiceDefinition(
             url='/martintest/(\d+)', cl='martin_testws_data', jsurl='/WebService_TestWS/', jsname='WebService_TestWS'),
-        ] # TODO: if we did not ask for any global vars we should not get any either.. this needs more input/error handling code
+        ]
 
     # region Method overrides
     def __init__(self, name, callback_function, queue, threadlist):
         HomeAutomationQueueThread.__init__(self, name, callback_function, queue, threadlist)
 
-        global CurrentInstance
-        CurrentInstance = self
+    def post_processqueue(self):
+        webservice_class_instances_add(self.get_class_name(), self)
+        # TODO: can this be solved via a decorator?
+        # threadmanager (main thread) should also keep this updated.. a good example for signals
+        # super(HATestApp, self).pre_processqueue()
 
     def get_class_name(self):
         return self.__class__.__name__
