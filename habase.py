@@ -4,7 +4,6 @@ from hacommon import QueueList, ThreadList
 
 class HomeAutomationThread(threading.Thread):
     webservice_definitions = None
-    # webservice_register_class = None
 
     def __init__(self, name, callback_function):
         threading.Thread.__init__(self)
