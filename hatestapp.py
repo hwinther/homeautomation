@@ -66,12 +66,29 @@ class martin_testws_data(object):
             if x['id'] <= _page:
                 ndataset.append(x)
         return json.dumps(ndataset)
+
+class martin_testws_reverse_data(object):
+    @webservice_json
+    def GET(self, page):
+        logging.info('WebService_TestWS pages past ' + page)
+        _page = 0
+        try:
+            _page = int(page)
+        except:
+            pass
+        ndataset = []
+        for x in dataset:
+            if x['id'] >= _page:
+                ndataset.append(x)
+        return json.dumps(ndataset)
 # endregion
 
 class HATestApp(HomeAutomationQueueThread):
     webservice_definitions = [
         WebServiceDefinition(
             url='/martintest/(\d+)', cl='martin_testws_data', jsurl='/WebService_TestWS/', jsname='WebService_TestWS'),
+        WebServiceDefinition(
+            url='/martintest/reverse/(\d+)', cl='martin_testws_reverse_data', jsurl='/WebService_TestWSRev/', jsname='WebService_TestWSRev'),
         ]
 
     # region Method overrides

@@ -22,7 +22,12 @@ class WebService_Definition_JSONP(object):
         d = {}
         d['Definitions'] = []
         for wsdi in WebServiceDefinitions:
-            d['Definitions'].append({'Name': wsdi.jsname, 'URL': wsdi.jsurl, 'Args': wsdi.argnames, 'Enums': wsdi.jsenums})
+            d['Definitions'].append({'Name': wsdi.jsname,
+                                     'URL': wsdi.jsurl,
+                                     'Args': wsdi.argnames,
+                                     'Enums': wsdi.jsenums,
+                                     # 'Module': wsdi.cl,
+                                     })
         return '%s(%s)' % (callback_name, json.dumps(d) )
 
 class HAWebService(HomeAutomationQueueThread):

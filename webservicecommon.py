@@ -10,7 +10,7 @@ class WebServiceDefinition:
         self.jsurl = jsurl # start URL for JS (arguments will be / separated behind this)
         self.jsname = jsname # JS bind css class name
         if jsenums == None:
-            jsenums = '{}'
+            jsenums = {}
         self.jsenums = jsenums
         self.methodname = methodname
         if argnames == None: argnames = []
@@ -158,12 +158,16 @@ def ws_register_class(cls):
         method = getattr(cls, methodname)
         if hasattr(method,'_prop'): # url, cl, jsurl, jsname, methodname=None, argnames
             for wsbinding in method._prop:
+                jsenums = {}
+                for p in wsbinding.wsparameters:
+                    jsenums[p.arg] = p.arg_enums
+
                 wsdi = WebServiceDefinition(
                     url = '/'+cls.__name__+'/'+methodname+'/' + '/'.join([i.arg_regex for i in wsbinding.wsparameters]),
                     cl = wsbinding.webservice_class, # cls.webservice_register_class,
                     jsurl = '/'+cls.__name__+'/'+methodname+'/',
                     jsname = 'WS_' + cls.__name__ + '_' + ''.join([i.capitalize() for i in methodname.split('_')]),
-                    jsenums = [{i.arg: i.arg_enums} for i in wsbinding.wsparameters],
+                    jsenums = jsenums, # [{i.arg: i.arg_enums} for i in wsbinding.wsparameters],
                     methodname = methodname,
                     argnames = [i.arg for i in wsbinding.wsparameters]
                     )

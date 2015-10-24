@@ -45,14 +45,21 @@ class HAJointSpace(HomeAutomationQueueThread):
     def get_json_status(self):
         # TODO: add cached values for volume and other relevant things
         try:
+            audio_volume = self.get_audio_volume()
+
             return json.dumps({self.get_class_name(): {
-                'audio_volume=': self.get_audio_volume(),
+                'audio_volume': self.audio_volume,
                 'system': self.get_system(),
                 'ambilight_mode': self.get_ambilight_mode(),
                 'ambilight_topology': self.get_ambilight_topology(),
                 'sources': self.get_sources(),
                 'sources_current': self.get_sources_current(),
             }})
+        except urllib2.URLError, e:
+            if e.reason.message == 'timed out':
+                return json.dumps({self.get_class_name(): {'Error': 'System offline'}})
+            else:
+                return json.dumps({self.get_class_name(): {'Error': str(traceback.format_exc())}})
         except:
             return json.dumps({self.get_class_name(): {'Error': str(traceback.format_exc())}})
 
@@ -78,14 +85,14 @@ class HAJointSpace(HomeAutomationQueueThread):
         url = self.baseurl + method_uri  # '/1/input/key'
         data = json.dumps(args)
         req = urllib2.Request(url, data)
-        response = urllib2.urlopen(req)  # response.headers.type #'text/html'  'application/json'
+        response = urllib2.urlopen(req, timeout=2)  # response.headers.type #'text/html'  'application/json'
         # content = response.read()  # response.getcode() #int
         return response.code == 200  # TODO: throw exception in other cases, and include errormessage from content
 
     def get_request(self, method_uri):
         url = self.baseurl + method_uri
         req = urllib2.Request(url)
-        response = urllib2.urlopen(req)
+        response = urllib2.urlopen(req, timeout=2)
         content = response.read()
         if response.headers.type == 'application/json':
             content = json.loads(content)
@@ -100,7 +107,7 @@ class HAJointSpace(HomeAutomationQueueThread):
                 return webcache.content
 
         req = urllib2.Request(url)
-        response = urllib2.urlopen(req)
+        response = urllib2.urlopen(req, timeout=2)
         content = response.read()
         if response.headers.type != 'application/json':
             content = '{}'
@@ -207,7 +214,55 @@ class HAJointSpace(HomeAutomationQueueThread):
     # endregion
 
     # region Input methods
-    @ws_register_definition( WSBinding('WebService_JointSpace_Dynamic_Set', [WSParam('key', '(\w+)')]) )
+    @ws_register_definition( WSBinding('WebService_JointSpace_Dynamic_Set', [WSParam('key', '(\w+)', {
+        'Standby': 'Standby',
+        'Back': 'Back',
+        'Find': 'Find',
+        'RedColour': 'RedColour',
+        'GreenColour': 'GreenColour',
+        'YellowColour': 'YellowColour',
+        'BlueColour': 'BlueColour',
+        'Home': 'Home',
+        'VolumeUp': 'VolumeUp',
+        'VolumeDown': 'VolumeDown',
+        'Mute': 'Mute',
+        'Options': 'Options',
+        'Dot': 'Dot',
+        'Digit0': 'Digit0',
+        'Digit1': 'Digit1',
+        'Digit2': 'Digit2',
+        'Digit3': 'Digit3',
+        'Digit4': 'Digit4',
+        'Digit5': 'Digit5',
+        'Digit6': 'Digit6',
+        'Digit7': 'Digit7',
+        'Digit8': 'Digit8',
+        'Digit9': 'Digit9',
+        'Info': 'Info',
+        'CursorUp': 'CursorUp',
+        'CursorDown': 'CursorDown',
+        'CursorLeft': 'CursorLeft',
+        'CursorRight': 'CursorRight',
+        'Confirm': 'Confirm',
+        'Next': 'Next',
+        'Previous': 'Previous',
+        'Adjust': 'Adjust',
+        'WatchTV': 'WatchTV',
+        'Viewmode': 'Viewmode',
+        'Teletext': 'Teletext',
+        'Subtitle': 'Subtitle',
+        'ChannelStepUp': 'ChannelStepUp',
+        'ChannelStepDown': 'ChannelStepDown',
+        'Source': 'Source',
+        'AmbilightOnOff': 'AmbilightOnOff',
+        'PlayPause': 'PlayPause',
+        'Pause': 'Pause',
+        'FastForward': 'FastForward',
+        'Stop': 'Stop',
+        'Rewind': 'Rewind',
+        'Record': 'Record',
+        'Online': 'Online'
+    })]) )
     def set_input_key(self, key):
         """POST input/key"""
         return self.post_request('/1/input/key', key=key)
