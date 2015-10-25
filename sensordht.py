@@ -3,9 +3,7 @@ from habase import HomeAutomationThread
 from hacommon import SerializableQueueItem
 from webservicecommon import WebServiceDefinition, webservice_jsonp, webservice_state_instances_add
 from hasettings import SENSOR_DHT_SENSOR_TYPE, SENSOR_DHT_SENSOR_PIN, SENSORDHT_PLOTDATA_PATH
-import logging, json, os
-
-import Adafruit_DHT, time
+import logging, json, os, time, datetime, Adafruit_DHT
 
 class WebService_SensorList(object):
     @webservice_jsonp
@@ -45,7 +43,8 @@ class SensorDHT(HomeAutomationThread):
             self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
             if humidity_previous != self.humidity or temperature_previous != self.temperature:
                 # values have changed, add to plot data
-                open(SENSORDHT_PLOTDATA_PATH + os.sep + time.strftime('%d.%m.%y.plotdata'), 'a').write('%.02f\t%.02f\n' %(self.temperature, self.humidity) )
+                open(SENSORDHT_PLOTDATA_PATH + os.sep + time.strftime('%d.%m.%y.plotdata'), 'a').write(datetime.datetime.now().strftime('%d.%m.%y %H:%M:%S')
+ + '\t%.02f\t%.02f\n' %(self.temperature, self.humidity) )
             #after 15 tries/30 seconds, None, None
             if time.time() - timecheck > 60:
                 timecheck = time.time()

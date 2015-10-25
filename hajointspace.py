@@ -48,7 +48,7 @@ class HAJointSpace(HomeAutomationQueueThread):
             audio_volume = self.get_audio_volume()
 
             return json.dumps({self.get_class_name(): {
-                'audio_volume': self.audio_volume,
+                'audio_volume': audio_volume,
                 'system': self.get_system(),
                 'ambilight_mode': self.get_ambilight_mode(),
                 'ambilight_topology': self.get_ambilight_topology(),
