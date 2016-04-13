@@ -1,8 +1,12 @@
 #!/usr/bin/python
 from habase import HomeAutomationQueueThread
-from webservicecommon import webservice_state_instances_add, WebService_Dynamic_Set, WebService_Dynamic_Get, WSBinding, WSParam, ws_register_class, ws_register_definition, webservice_class_instances_add
-import logging, json
-import time, serial
+from webservicecommon import webservice_state_instances_add, WebService_Dynamic_Set, WebService_Dynamic_Get,\
+    WSBinding, WSParam, ws_register_class, ws_register_definition, webservice_class_instances_add
+import logging
+import json
+import time
+import serial
+
 
 # region Web methods
 # class WebService_SerialIRSendByte(object):
@@ -16,11 +20,13 @@ class WebService_SerialIR_Dynamic_Set(WebService_Dynamic_Set):
         # self.currentInstance = CurrentInstance
         super(WebService_SerialIR_Dynamic_Set, self).__init__(*args, **kwargs)
 
+
 class WebService_SerialIR_Dynamic_Get(WebService_Dynamic_Get):
     def __init__(self, *args, **kwargs):
         # self.currentInstance = CurrentInstance
         super(WebService_SerialIR_Dynamic_Get, self).__init__(*args, **kwargs)
 # endregion
+
 
 @ws_register_class
 class HASerialIR(HomeAutomationQueueThread):

@@ -2,34 +2,41 @@
 import logging, web, types, json
 from hacommon import SerializableQueueItem
 
+
 # region Type definitions
 class WebServiceDefinition:
     def __init__(self, url, cl, jsurl, jsname, jsenums=None, methodname=None, argnames=None):
-        self.url = url # path
-        self.cl = cl # class (as str)
-        self.jsurl = jsurl # start URL for JS (arguments will be / separated behind this)
-        self.jsname = jsname # JS bind css class name
-        if jsenums == None:
+        self.url = url  # path
+        self.cl = cl  # class (as str)
+        self.jsurl = jsurl  # start URL for JS (arguments will be / separated behind this)
+        self.jsname = jsname  # JS bind css class name
+        if jsenums is None:
             jsenums = {}
         self.jsenums = jsenums
         self.methodname = methodname
-        if argnames == None: argnames = []
+        if argnames is None: argnames = []
         self.argnames = argnames
+
     def __str__(self):
-        return 'WebServiceDefinition(url=%s, cl=%s, jsurl=%s jsname=%s methodname=%s argnames=%s)' %(self.url, self.cl, self.jsurl, self.jsname, self.methodname, self.argnames)
+        return 'WebServiceDefinition(url=%s, cl=%s, jsurl=%s jsname=%s methodname=%s argnames=%s)' \
+               %(self.url, self.cl, self.jsurl, self.jsname, self.methodname, self.argnames)
+
     def __repr__(self):
         return self.__str__()
+
 
 class WebServiceDefinitionList(list):
     pass
 
+
 class WSBinding(object):
     def __init__(self, webservice_class, wsparameters=None):
         if type(webservice_class) == types.ClassType:
-            webservice_class = webservice_class.__name__ #we only need the string representation
+            webservice_class = webservice_class.__name__  # we only need the string representation
         self.webservice_class = webservice_class
         if wsparameters is None: wsparameters = []
         self.wsparameters = wsparameters
+
 
 class WSParam(object):
     def __init__(self, arg, arg_regex, arg_enums=None):
@@ -37,11 +44,14 @@ class WSParam(object):
         self.arg_regex = arg_regex
         if arg_enums is None: arg_enums = {}
         self.arg_enums = arg_enums
+
     def __str__(self):
         return 'WSParam(' + self.arg + ', ' + self.arg_regex + ', ' + str(self.arg_enums) + ')'
+
     def __repr__(self):
         return self.__str__()
 # endregion
+
 
 def webservicedecorator_globals_add(**kwargs):
     """
@@ -54,6 +64,7 @@ def webservicedecorator_globals_add(**kwargs):
     for key, value in kwargs.iteritems():
         webservice_globals[key] = value
 
+
 def webservice_state_instances_add(name, inst):
     """
     Module registration for the state decorator (helps webservice thread know which modules are relevant for the overall system state output)
@@ -63,6 +74,7 @@ def webservice_state_instances_add(name, inst):
     """
     global webservice_state_instances
     webservice_state_instances[name] = inst
+
 
 def webservice_class_instances_add(classname, classinstance):
     """
@@ -75,6 +87,7 @@ def webservice_class_instances_add(classname, classinstance):
     """
     global webservice_module_class_instances
     webservice_module_class_instances[classname.lower()] = classinstance
+
 
 def webservice_hawebservice_init(**kwargs):
     """
@@ -92,6 +105,7 @@ def webservice_hawebservice_init(**kwargs):
     global webservice_module_class_instances
     webservice_module_class_instances = {}
 
+
 def webservice_state_jsonp(f):
     """
     Decorator for the module overall state (this will be polled by a browser to update all component states in the view)
@@ -105,6 +119,7 @@ def webservice_state_jsonp(f):
             kwargs[key] = value
         return '%s(%s)' % (callback_name, f(*args, **kwargs) )
     return decorated
+
 
 def webservice_json(f):
     """
@@ -127,6 +142,7 @@ def webservice_json(f):
         return '%s' % (retval)
     return decorated
 
+
 def webservice_jsonp(f):
     """
     decorator for GET methods in webservice classes (jsonp variant - cross site)
@@ -136,7 +152,8 @@ def webservice_jsonp(f):
     def decorated(*args, **kwargs):
         callback_name = web.input(callback='jsonCallback').callback
         web.header('Content-Type', 'application/javascript')
-        # shortcut? call above decorator to get returned data and format it with %s(%s) after.. data = webservice_json(f)
+        # shortcut? call above decorator to get returned data and format it
+        #  with %s(%s) after.. data = webservice_json(f)
         decorator = args[0]
         modulename = decorator.__module__
 
@@ -150,6 +167,7 @@ def webservice_jsonp(f):
         retval = f(*args, **kwargs)
         return '%s(%s)' % (callback_name, retval)
     return decorated
+
 
 def ws_register_class(cls):
     # logging.info('class register called: ' + cls.webservice_register_class)
@@ -175,11 +193,13 @@ def ws_register_class(cls):
                 cls._webservice_definitions.append(wsdi)
     return cls
 
+
 def ws_register_definition(*args):
     def wrapper(func):
         func._prop=args
         return func
     return wrapper
+
 
 class WebService_Dynamic_Set(object):
     currentInstance = None
@@ -190,7 +210,8 @@ class WebService_Dynamic_Set(object):
         if len(path_parts) >= 3:
             self.parentClass = path_parts[1]
             self.methodname = path_parts[2]
-        # logging.info('Dynamic WS Set call - %s %s %s' %(self.parentClass, self.methodname, getattr(self.currentInstance, self.methodname)) )
+        # logging.info('Dynamic WS Set call - %s %s %s' %(self.parentClass, self.methodname,
+        #  getattr(self.currentInstance, self.methodname)) )
         # SharedQueue.append(sqi) TODO: this is no longer happening at all
         if hasattr(self.currentInstance, 'queue'):
             logging.info('adding action to queue for ' + self.parentClass)
@@ -202,6 +223,7 @@ class WebService_Dynamic_Set(object):
         return self.currentInstance.get_json_status()
         # return state as it was before action is likely to have taken place.. may not be that useful
 
+
 class WebService_Dynamic_Get(object):
     currentInstance = None
 
@@ -211,5 +233,6 @@ class WebService_Dynamic_Get(object):
         if len(path_parts) >= 3:
             self.parentClass = path_parts[1]
             self.methodname = path_parts[2]
-        # logging.info('Dynamic WS Get call - %s %s %s' %(self.parentClass, self.methodname, getattr(self.currentInstance, self.methodname)) )
+        # logging.info('Dynamic WS Get call - %s %s %s' %(self.parentClass, self.methodname,
+        #  getattr(self.currentInstance, self.methodname)) )
         return getattr(self.currentInstance, self.methodname)(*args)

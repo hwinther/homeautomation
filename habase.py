@@ -2,8 +2,10 @@
 import logging, threading, time, json
 from hacommon import QueueList, ThreadList
 
+
 class HomeAutomationThread(threading.Thread):
     webservice_definitions = None
+    load_priority = 0
 
     def __init__(self, name, callback_function):
         threading.Thread.__init__(self)
@@ -20,6 +22,7 @@ class HomeAutomationThread(threading.Thread):
 
     def get_class_name(self):
         return self.__class__.__name__
+
 
 class HomeAutomationQueueThread(HomeAutomationThread):
     def __init__(self, name, callback_function, queue, threadlist):
