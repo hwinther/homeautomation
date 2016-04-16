@@ -41,10 +41,19 @@ class SensorDHT(HomeAutomationThread):
             humidity_previous = self.humidity
             temperature_previous = self.temperature
             self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
-            if humidity_previous != self.humidity or temperature_previous != self.temperature:
+            if humidity_previous > self.humidity:
+                c1 = humidity_previous - self.humidity
+            else:
+                c1 = self.humidity - humidity_previous
+            if temperature_previous > self.temperature:
+                c2 = temperature_previous - self.temperature
+            else:
+                c2 = self.temperature - temperature_previous
+            if c1 > 5 or c2 > 2:
                 # values have changed, add to plot data
                 open(SENSORDHT_PLOTDATA_PATH + os.sep + time.strftime('%d.%m.%y.plotdata'), 'a').write(datetime.datetime.now().strftime('%d.%m.%y %H:%M:%S')
  + '\t%.02f\t%.02f\n' %(self.temperature, self.humidity) )
+                logging.info('plotting data due to change, prev h:%s cur h: %s prev t:%s cur t: %s - c1:%s c2:%s' % (humidity_previous, self.humidity, temperature_previous, self.temperature, c1, c2))
             #after 15 tries/30 seconds, None, None
             if time.time() - timecheck > 60:
                 timecheck = time.time()
