@@ -41,7 +41,7 @@ class HASerialIR(HomeAutomationQueueThread):
         #	baseurl = HA_JOINTSPACE_URI
         #self.baseurl = baseurl
 
-        self.Serial = serial.Serial('/dev/ttyACM1', 9600, timeout=2)
+        self.Serial = serial.Serial('/dev/ttyACM0', 9600, timeout=2)
 
         # global CurrentInstance
         # CurrentInstance = self

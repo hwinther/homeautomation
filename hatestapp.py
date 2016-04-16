@@ -113,9 +113,9 @@ class HATestApp(HomeAutomationQueueThread):
         # webservice_class_instances_add(self.get_class_name(), self)
         # TODO: can this be solved via a decorator?
         # threadmanager (main thread) should also keep this updated.. a good example for signals
-        if time.time() - self.timestopcheck > 15:
-            logging.debug('crashing module for testing purposes')
-            raise IOError('test exception')
+        #if time.time() - self.timestopcheck > 15:
+        #    logging.debug('crashing module for testing purposes')
+        #    raise IOError('test exception')
         super(HATestApp, self).pre_processqueue()
 
     def get_class_name(self):
