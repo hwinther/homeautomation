@@ -1,5 +1,10 @@
 #!/usr/bin/python
-import logging, web, json, types, traceback, copy
+import logging
+import web
+import json
+import types
+import traceback
+import copy
 from habase import HomeAutomationQueueThread
 from webservicecommon import WebServiceDefinition, WebServiceDefinitionList, webservice_hawebservice_init, webservice_state_jsonp
 
@@ -12,7 +17,7 @@ class WebService_State_JSONP(object):
             # jsonvalues.append(value())
             jd = json.loads(value())
             # logging.info('jd = ' + `jd`)
-            jsonvalues[jd.items()[0][0]] = jd.items()[0][1] # TODO: a nicer solution for this
+            jsonvalues[jd.items()[0][0]] = jd.items()[0][1]  # TODO: a nicer solution for this
         # return '[' + ', '.join(jsonvalues) + ']'
         return json.dumps(jsonvalues)
 
@@ -30,14 +35,14 @@ class WebService_Definition_JSONP(object):
                                      'Enums': wsdi.jsenums,
                                      # 'Module': wsdi.cl,
                                      })
-        return '%s(%s)' % (callback_name, json.dumps(d) )
+        return '%s(%s)' % (callback_name, json.dumps(d))
 
 
 class HAWebService(HomeAutomationQueueThread):
     webservice_definitions = [
-            WebServiceDefinition(
-                '/state/', 'WebService_State_JSONP', '/state/', 'wsState'),
-                            ]
+        WebServiceDefinition(
+            '/state/', 'WebService_State_JSONP', '/state/', 'wsState'),
+    ]
     load_priority = 1
 
     def __init__(self, name, callback_function, queue, threadlist, modules):
@@ -49,8 +54,8 @@ class HAWebService(HomeAutomationQueueThread):
 
         self.modules = modules
 
-        HomeAutomationQueueThread.__init__(self, name = name, callback_function = callback_function,
-                                            queue = queue, threadlist = threadlist)
+        HomeAutomationQueueThread.__init__(self, name=name, callback_function=callback_function,
+                                           queue=queue, threadlist=threadlist)
 
         self.load_ws_definitions()
 
@@ -119,8 +124,8 @@ class HAWebService(HomeAutomationQueueThread):
 
     def run(self):
         urls = (
-                '/definitions/', 'WebService_Definition_JSONP',
-                )
+            '/definitions/', 'WebService_Definition_JSONP',
+        )
         for wsdi in WebServiceDefinitions:
             urls = urls + (wsdi.url, wsdi.cl)
             logging.info('adding url: ' + wsdi.url)

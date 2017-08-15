@@ -4,16 +4,19 @@ from habase import HomeAutomationQueueThread
 from hacommon import SerializableQueueItem
 from webservicecommon import WebServiceDefinition, webservice_jsonp, webservice_state_instances_add, WebService_Dynamic_Get, WebService_Dynamic_Set, webservice_class_instances_add, WSBinding, WSParam, ws_register_class, ws_register_definition
 
+
 # region Web methods
 class WebService_Cec_Dynamic_Set(WebService_Dynamic_Set):
     def __init__(self, *args, **kwargs):
         # self.currentInstance = CurrentInstance
         super(WebService_Cec_Dynamic_Set, self).__init__(*args, **kwargs)
 
+
 class WebService_Cec_Dynamic_Get(WebService_Dynamic_Get):
     def __init__(self, *args, **kwargs):
         # self.currentInstance = CurrentInstance
         super(WebService_Cec_Dynamic_Get, self).__init__(*args, **kwargs)
+
 
 class WebService_CecPowerOn(object):
     @webservice_jsonp
@@ -28,6 +31,7 @@ class WebService_CecPowerOn(object):
             self.currentInstance.queue.append(SerializableQueueItem(HACec.__name__, self.currentInstance.cec_client_power_on, _id)) #:\
         return self.currentInstance.get_json_status()
 
+
 class WebService_CecStandby(object):
     @webservice_jsonp
     def GET(self, id):
@@ -41,6 +45,7 @@ class WebService_CecStandby(object):
             self.currentInstance.queue.append(SerializableQueueItem(HACec.__name__, self.currentInstance.cec_client_standby, _id))
         return self.currentInstance.get_json_status()
 
+
 class WebService_CecOsdText(object):
     @webservice_jsonp
     def GET(self, id, text):
@@ -53,6 +58,7 @@ class WebService_CecOsdText(object):
         self.currentInstance.queue.append(SerializableQueueItem(HACec.__name__, self.currentInstance.cec_client_osd, _id, text))
         return self.currentInstance.get_json_status()
 # endregion
+
 
 class HACec(HomeAutomationQueueThread):
     webservice_definitions = [

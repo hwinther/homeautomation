@@ -5,17 +5,20 @@ from hacommon import WebCache
 from webservicecommon import webservice_state_instances_add, WebService_Dynamic_Set, WebService_Dynamic_Get, WSBinding, WSParam, ws_register_class, ws_register_definition, webservice_class_instances_add
 from hasettings import HA_JOINTSPACE_URI
 
+
 # region Web methods
 class WebService_JointSpace_Dynamic_Set(WebService_Dynamic_Set):
     def __init__(self, *args, **kwargs):
         # self.currentInstance = CurrentInstance
         super(WebService_JointSpace_Dynamic_Set, self).__init__(*args, **kwargs)
 
+
 class WebService_JointSpace_Dynamic_Get(WebService_Dynamic_Get):
     def __init__(self, *args, **kwargs):
         # self.currentInstance = CurrentInstance
         super(WebService_JointSpace_Dynamic_Get, self).__init__(*args, **kwargs)
 # endregion
+
 
 @ws_register_class
 class HAJointSpace(HomeAutomationQueueThread):

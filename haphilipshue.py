@@ -3,8 +3,12 @@ from habase import HomeAutomationQueueThread
 from hacommon import SerializableQueueItem
 from webservicecommon import WebServiceDefinition, webservice_jsonp, webservice_state_instances_add, webservice_class_instances_add
 from hasettings import HA_PHILIPS_HUE_BRIDGE
-import logging, json, time, threading
+import logging
+import json
+import time
+import threading
 from phue import Bridge
+
 
 class WebService_SetLightState(object):
     @webservice_jsonp
@@ -13,7 +17,8 @@ class WebService_SetLightState(object):
         logging.info('WebService_SetLightState id ' + id + ' state ' + str(_state))
         self.currentInstance.queue.append(SerializableQueueItem(HAPhilipsHue.__name__, self.currentInstance.set_light_state, id, _state))
         # time.sleep(0.5) #let the state get updated.. or just set it in cache directly?
-        return '{}' #no update.. self.currentInstance.get_json_status() #TODO: return cache + this change?
+        return '{}'  # no update.. self.currentInstance.get_json_status() #TODO: return cache + this change?
+
 
 class HAPhilipsHue(HomeAutomationQueueThread):
     webservice_definitions = [
@@ -25,7 +30,7 @@ class HAPhilipsHue(HomeAutomationQueueThread):
     def __init__(self, name, callback_function, queue, threadlist, bridgeip=None):
         HomeAutomationQueueThread.__init__(self, name, callback_function, queue, threadlist)
 
-        if bridgeip == None:
+        if bridgeip is None:
             bridgeip = HA_PHILIPS_HUE_BRIDGE
         self.bridgeip = bridgeip
         self.bridge = None

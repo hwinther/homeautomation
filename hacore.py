@@ -8,7 +8,7 @@ from ledmatrixbase import LEDMatrixBase
 from cli import LEDMatrixSocketClient
 
 
-class HACore():
+class HACore(object):
     """
     This class puts it all together,
      creating a state machine and a socket thread that calls state changes for received commands

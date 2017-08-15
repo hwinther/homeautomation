@@ -6,6 +6,7 @@ import logging, base64, os, time
 from PIL import Image
 import numpy as np
 
+
 class WebService_ImageSetBase64Data_JSONP(object):
     @webservice_jsonp
     def GET(self, imageb64data):
@@ -18,6 +19,7 @@ class WebService_ImageSetBase64Data_JSONP(object):
         logging.info('Attempting to set image from base64 data - test')
         SharedQueue.append(SerializableQueueItem('LEDMatrixCore', rgbm.SetMatrixFromImgBase64, imageb64data))
         return rgbm.get_json_state()
+
 
 class LEDMatrixImage(LEDMatrixBase):
     '''Sets rgbmatrix to image based on HTML inline image format'''
@@ -83,6 +85,7 @@ class LEDMatrixImage(LEDMatrixBase):
                     break
                 frame+=1
 
+
 def alpha_to_color(image, color=(255, 255, 255)):
     """Set all fully transparent pixels of an RGBA image to the specified color.
     This is a very simple solution that might leave over some ugly edges, due
@@ -102,6 +105,7 @@ def alpha_to_color(image, color=(255, 255, 255)):
     b[a == 0] = color[2] 
     x = np.dstack([r, g, b, a])
     return Image.fromarray(x, 'RGBA')
+
 
 def alpha_composite(front, back):
     """Alpha composite two RGBA images.
@@ -131,6 +135,7 @@ def alpha_composite(front, back):
     result = Image.fromarray(result, 'RGBA')
     return result
 
+
 def alpha_composite_with_color(image, color=(255, 255, 255)):
     """Alpha composite an RGBA image with a single color image of the
     specified color and the same size as the original image.
@@ -142,6 +147,7 @@ def alpha_composite_with_color(image, color=(255, 255, 255)):
     """
     back = Image.new('RGBA', size=image.size, color=color + (255,))
     return alpha_composite(image, back)
+
 
 def pure_pil_alpha_to_color_v1(image, color=(255, 255, 255)):
     """Alpha composite an RGBA Image with a specified color.
@@ -171,6 +177,7 @@ def pure_pil_alpha_to_color_v1(image, color=(255, 255, 255)):
             p[x, y] = blend_rgba(color + (255,), p[x, y])
 
     return im
+
 
 def pure_pil_alpha_to_color_v2(image, color=(255, 255, 255)):
     """Alpha composite an RGBA Image with a specified color.

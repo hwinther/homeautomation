@@ -1,0 +1,24 @@
+down
+
+Encoding  : NEC
+Code      : 48B708F7 (32 bits)
+
+up
+
+Encoding  : NEC
+Code      : 48B78877 (32 bits)
+
+turbo
+
+Encoding  : NEC
+Code      : 48B748B7 (32 bits)
+
+auto
+
+Encoding  : NEC
+Code      : 48B76897 (32 bits)
+
+power
+
+Encoding  : NEC
+Code      : 48B7C837 (32 bits)

@@ -9,6 +9,7 @@ from datetime import datetime
 import numpy as np
 from ledmatrixcolor import CreateColormap
 
+
 # region Web methods
 class WebService_PlayWav_And_State_JSONP(object):
     @webservice_jsonp
@@ -29,6 +30,7 @@ class WebService_PlayWav_And_State_JSONP(object):
         time.sleep(0.2) # give the main loop time to fetch this item (alternatively, can we push it directly to the SM?)
         return rgbm.get_json_state()
 
+
 class WebService_AudioStop_And_State_JSONP(object):
     @webservice_jsonp
     def GET(self):
@@ -38,6 +40,7 @@ class WebService_AudioStop_And_State_JSONP(object):
             rgbm.StopAudioVisualize()
         time.sleep(0.2) # give the main loop time to fetch this item (alternatively, can we push it directly to the SM?)
         return rgbm.get_json_state()
+
 
 class WebService_AudioTest_And_State_JSONP(object):
     @webservice_jsonp
@@ -49,6 +52,7 @@ class WebService_AudioTest_And_State_JSONP(object):
             logging.info('Setting audio thread freq_step to ' + str(new_freq_step) + ' making max freq ' + str(new_freq_step*31) )
             rgbm.current_audio_thread.freq_step = new_freq_step
         return rgbm.get_json_state()
+
 
 class WebService_AudioSetMaxFreq_And_State_JSONP(object):
     @webservice_jsonp
@@ -64,6 +68,7 @@ class WebService_AudioSetMaxFreq_And_State_JSONP(object):
             rgbm.current_audio_thread.freq_step = new_freq_step
         return rgbm.get_json_state()
 
+
 class WebService_AudioToggleSingleLine_And_State_JSONP(object):
     @webservice_jsonp
     def GET(self):
@@ -73,6 +78,7 @@ class WebService_AudioToggleSingleLine_And_State_JSONP(object):
             logging.info('Toggling singleline on audio thread')
             rgbm.current_audio_thread.singleLine = not rgbm.current_audio_thread.singleLine
         return rgbm.get_json_state()
+
 
 class WebService_AudioToggleBeat_And_State_JSONP(object):
     @webservice_jsonp
@@ -84,6 +90,7 @@ class WebService_AudioToggleBeat_And_State_JSONP(object):
             rgbm.current_audio_thread.beatEnabled = not rgbm.current_audio_thread.beatEnabled
         return rgbm.get_json_state()
 
+
 class WebService_AudioPause_And_State_JSONP(object):
     @webservice_jsonp
     def GET(self):
@@ -94,6 +101,7 @@ class WebService_AudioPause_And_State_JSONP(object):
             rgbm.current_audio_thread.paused = True
         return rgbm.get_json_state()
 
+
 class WebService_AudioResume_And_State_JSONP(object):
     @webservice_jsonp
     def GET(self):
@@ -103,6 +111,7 @@ class WebService_AudioResume_And_State_JSONP(object):
             logging.info('Resuming audio thread')
             rgbm.current_audio_thread.paused = False
         return rgbm.get_json_state()
+
 
 class WebService_AudioSetColormap_And_State_JSONP(object):
     @webservice_jsonp
@@ -123,11 +132,13 @@ class WebService_AudioSetColormap_And_State_JSONP(object):
         return rgbm.get_json_state()
 # endregion
 
+
 class AudioBeat:
     """State class used to community with beat_handler thread"""
     def __init__(self):
         self.activate=False
         self.xy=(0,0)
+
 
 def beat_handler(beat, lights):
     """beat_handler thread loop, should do something when a beat has been detected in audio thread"""
@@ -140,6 +151,7 @@ def beat_handler(beat, lights):
             beat.activate=False
         #lights[0].xy = beat.xy
         time.sleep(0.1)
+
 
 class LEDMatrixAudio(LEDMatrixBase):
     """The Audio class does audio spectogram analysis of audio chunks from a wav file and displays the frequency volume on rgbmatrix leds"""

@@ -10,7 +10,8 @@ from ledmatrixaudio import LEDMatrixAudio
 from ledmatrixsocketservice import LEDMatrixSocketServiceUDP
 from ledmatrixanimations import SplashScreen  # , ScreensaverA, CylonScan
 
-#TODO: should perhaps be merged with LEDMatrixCore class so as to be more in line with other modules (self contained and inheriting from habase*)
+
+# TODO: should perhaps be merged with LEDMatrixCore class so as to be more in line with other modules (self contained and inheriting from habase*)
 class RGBMatrix(object):
     def __init__(self, rgbmatrix, sharedqueue, threadlist):
         self.rgbmatrix = rgbmatrix

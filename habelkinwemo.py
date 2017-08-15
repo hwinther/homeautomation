@@ -1,6 +1,4 @@
 #!/usr/bin/python
-__author__ = 'Hans Christian'
-
 from habase import HomeAutomationQueueThread
 from hacommon import SerializableQueueItem
 from webservicecommon import WebServiceDefinition, webservice_jsonp, webservice_state_instances_add, webservice_class_instances_add
@@ -8,6 +6,10 @@ from hasettings import HA_PHILIPS_HUE_BRIDGE
 import logging, json, time, threading
 import ouimeaux
 from ouimeaux.environment import Environment
+
+__author__ = 'Hans Christian'
+__version__ = '0.1'
+
 
 class WebService_HABelkinWemoSetLightState(object):
     @webservice_jsonp
@@ -17,6 +19,7 @@ class WebService_HABelkinWemoSetLightState(object):
         self.currentInstance.queue.append(SerializableQueueItem(HABelkinWemo.__name__, self.currentInstance.set_light_state, id, _state))
         # time.sleep(0.5) #let the state get updated.. or just set it in cache directly?
         return '{}' #no update.. self.currentInstance.get_json_status() #TODO: return cache + this change?
+
 
 class HABelkinWemo(HomeAutomationQueueThread):
     webservice_definitions = [
