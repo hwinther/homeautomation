@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<ScriptActions>
+	<ScriptAction name="Anteroom sensor motion" description="When anteroom sensor detects motion the lights are turned on for 60 seconds">
+		<Triggers>
+			<Trigger type="MotionEvent" source="anteroom sensor" onActivation="turnOnAnteroomLights, clearAnteroomLightsDeactivation" onDeactivation="setAnteroomLightsDeactivationTimer" />
+		</Triggers>
+		<Actions>
+			<Action name="turnOnAnteroomLights" sourcesystem="hue" source="Anteroom, Extended color light 1" state="True" when="now" />
+			<Action name="clearAnteroomLightsDeactivation" sourcesystem="hue" source="Anteroom, Extended color light 1" state="False" when="any" modifier="delete" />
+			<Action name="setAnteroomLightsDeactivationTimer" sourcesystem="hue" source="Anteroom, Extended color light 1" state="False" when="+30s" />
+		</Actions>
+	</ScriptAction>
+</ScriptActions>

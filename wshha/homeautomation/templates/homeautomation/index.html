@@ -1,0 +1,166 @@
+{% extends "homeautomation/base.html" %}
+
+{% block title %}WSH | HA{% endblock %}
+
+{% block extracss %}
+<link rel="stylesheet" href="/static/css/hsl.css" />
+<link rel="stylesheet" href="/static/js/jquery.mobile/jquery.mobile-1.4.5.min.css" />
+{% endblock %}
+
+{% block extrajs %}
+<script src="/static/js/jquery.mobile/jquery.mobile-1.4.5.min.js"></script>
+<script src="http://yui.yahooapis.com/3.18.1/build/yui/yui-min.js"></script>
+<script src="/static/js/index-colorpicker.js"></script>
+<script src="/static/js/index-wsdef.js"></script>
+
+<script type="text/javascript">
+$( document ).ready(function() {
+
+	$("#chkLight-all").change(function(event){
+		$(".chkLights").prop('checked', $(this).prop("checked"));
+		$(".chkLights").checkboxradio("refresh");
+	});
+	
+	$('#flip-all').change(function(event) {
+		event.stopPropagation();
+		var myswitch = $(this);
+		var show     = myswitch[0].selectedIndex == 1 ? true:false;
+		if (show) {
+			$('.flipadelphia').val('on');
+		}
+		else {
+			$('.flipadelphia').val('off');
+		}
+		try {
+			$('.flipadelphia').slider("refresh");
+		}
+		catch (err) {
+			console.log ("Error occurred refreshing slider (probably first run)");
+		}
+	});
+
+	{% for light in lights %}
+		$('#flip-{{ light.id }}').change(function(event) {
+			event.stopPropagation();
+			var myswitch = $(this);
+			var show     = myswitch[0].selectedIndex == 1 ? true:false;
+
+			if(show) {
+				var jqxhr = $.ajax( "/switch/{{ light.id }}/on/" )
+				  .done(function() {
+					//console.log( "success" );
+				  })
+				  .fail(function() {
+					//console.log( "error" );
+				  })
+				  .always(function() {
+					//console.log( "complete" );
+				  });
+			} else {
+				var jqxhr = $.ajax( "/switch/{{ light.id }}/off/" )
+				  .done(function() {
+					//console.log( "success" );
+				  })
+				  .fail(function() {
+					//console.log( "error" );
+				  })
+				  .always(function() {
+					//console.log( "complete" );
+				  });
+			}
+		});
+	{% endfor %}
+	
+	$( "#btnSetColor" ).click(function() {
+		var values = $('input:checkbox:checked.chkLights').map(function () {
+		  return this.id;
+		}).get();
+		//var hslValues = $("#hsl-output").val().replace(" ", "").replace("%", "").replace("hsl(", "").replace(")", "");
+		//var hslVars = hslValues.split(",");
+		var rgbValues = $("#rgb-output").val().replace("rgb(", "").replace(" ", "").replace(" ", "").replace(")", "");
+		var vals = rgbValues.split(",");
+		for (index = 0; index < values.length; ++index) {
+			var lightid = values[index].replace('chkLight-', '');
+			//console.log(lightid + " - " + "rgb " + vals[0] + " - " + vals[1] + " - " + vals[2]);
+			var jqxhr = $.ajax( "/color/" + lightid + "/rgb/" + vals[0] + "/" + vals[1] + "/" + vals[2] + "/" )
+			  .done(function() {
+				//console.log( "success" );
+			  })
+			  .fail(function() {
+				//console.log( "error" );
+			  })
+			  .always(function() {
+				//console.log( "complete" );
+			  });
+		}
+	});
+	
+	
+	function tvRemoteCommand(command) {
+		var jqxhr = $.ajax( "/tv/remote/" + command + "/" )
+		  .done(function() {
+			console.log( "success" );
+		  })
+		  .fail(function() {
+			console.log( "error" );
+		  })
+		  .always(function() {
+			console.log( "complete" );
+		  });
+	}
+	$('.tvRemoteButton').click(function() {
+		tvRemoteCommand($(this).prop('id').replace('tv', ''));
+		return false;
+	});
+	
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<style type="text/css">
+@media only screen and (min-width: 35em) {
+    /* Style adjustments for viewports that meet the condition */
+	/*#lightsWrapper {
+		max-width: 400px;
+	}*/
+	
+}
+</style>
+
+<header data-role="header" data-theme="b"> 
+  <h1 class="ui-title" role="heading">Homeautomation</h1>
+    <div class="ui-btn-right" data-role="controlgroup" data-type="horizontal">
+     <!--<a href="#" data-role="button" data-icon="gear">filter</a>-->
+     <a href="http://rpi2.oh.wsh.no" data-role="button" data-icon="grid">LEDMatrix</a>
+    </div>
+</header>
+
+<div data-role="tabs" id="tabs">
+  <div data-role="navbar">
+	<ul>
+	  <!--<li><a href="#lightsWrapper" data-ajax="false">lights</a></li>-->
+	  <li><a href="#lightsWrapperJsonp" data-ajax="false" class="ui-btn-active">lights</a></li>
+	  <li><a href="#colorpicker" data-ajax="false">colors</a></li>
+	  <li><a href="#tvRemoteWrapper" data-ajax="false">TV</a></li>
+	</ul>
+  </div>
+	<!--div id="lightsWrapper" class="ui-body-d ui-content">
+{# include "homeautomation/lights.html" #}
+	</div-->
+	
+	<div id="lightsWrapperJsonp" class="ui-body-d ui-content">
+{% include "homeautomation/lightgrid_jsonp.html" %}
+	</div>
+	
+  <div id="colorpicker">
+{% include "homeautomation/colorpicker.html" %}
+  </div>
+  
+  <div id="tvRemoteWrapper">
+{% include "homeautomation/tv.html" %}
+  </div>
+  
+</div>
+
+{% endblock %}

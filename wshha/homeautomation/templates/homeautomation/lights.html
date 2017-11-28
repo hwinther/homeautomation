@@ -1,0 +1,27 @@
+		<div class="ui-grid-a">
+			<div class="ui-block-a">
+				<input type="checkbox" id="chkLight-all" name="chkLight-all">
+				<label for="chkLight-all">All</label>
+			</div>
+			<div class="ui-block-b">
+				<select name="flip-all" id="flip-all" data-role="slider" data-mini="true">
+						<option value="off">Off</option>
+						<option value="on" selected>On</option>
+				</select>
+			</div>
+		</div><!-- /grid-a -->
+
+		{% for light in lights %}
+		<div class="ui-grid-a">
+			<div class="ui-block-a">
+				<input type="checkbox" id="chkLight-{{ light.id }}" name="chkLight-{{ light.id }}" class="chkLights">
+				<label for="chkLight-{{ light.id }}">{{ light.name }}</label>
+			</div>
+			<div class="ui-block-b">
+				<select name="flip-{{ light.id }}" id="flip-{{ light.id }}" class="flipadelphia" data-role="slider" data-mini="true">
+						<option value="off" {% if not light.state %}selected{% endif %}>Off</option>
+						<option value="on" {% if light.state %}selected{% endif %}>On</option>
+				</select>
+			</div>
+		</div><!-- /grid-a -->
+		{% endfor %}

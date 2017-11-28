@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<ScriptActions>
+	<ScriptAction name="Kitchen sensor motion" description="When kitchen sensor detects motion the lights are turned on for 60 seconds">
+		<Triggers>
+			<Trigger type="MotionEvent" source="kitchen sensor" onActivation="turnOnKitchenLights, clearKitchenLightsDeactivation" onDeactivation="setKitchenLightsDeactivationTimer" />
+		</Triggers>
+		<Actions>
+			<Action name="turnOnKitchenLights" sourcesystem="hue" source="Kitchen 1, Kitchen 2" state="True" when="now" />
+			<Action name="clearKitchenLightsDeactivation" sourcesystem="hue" source="Kitchen 1, Kitchen 2" state="False" when="any" modifier="delete" />
+			<Action name="setKitchenLightsDeactivationTimer" sourcesystem="hue" source="Kitchen 1, Kitchen 2" state="False" when="+30s" />
+		</Actions>
+	</ScriptAction>
+</ScriptActions>

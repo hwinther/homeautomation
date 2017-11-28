@@ -5,7 +5,7 @@ from hacore import HACore
 import code
 
 if __name__ == '__main__':
-    InitLogging()
+    InitLogging(filepath='/usr/wsh/ha.log')
     hacore = HACore()
     hacore.mainloop()
     # vars1 = globals().copy()

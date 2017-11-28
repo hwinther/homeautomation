@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<ScriptActions>
+	<!--<ScriptAction name="Bedroom sensor motion" description="When bedroom sensor detects motion the lights are turned on for 60 seconds">
+		<Triggers>
+			<Trigger type="MotionEvent" source="bedroom sensor" onActivation="turnOnBedroomLights, clearBedroomLightsDeactivation" onDeactivation="setBedroomLightsDeactivationTimer" />
+		</Triggers>
+		<Actions>
+			<Action name="turnOnBedroomLights" sourcesystem="hue" source="Bedroom spot 1, Bedroom spot 2, Bedroom spot 3, Bedroom spot 4" state="True" when="now" />
+			<Action name="clearBedroomLightsDeactivation" sourcesystem="hue" source="Bedroom spot 1, Bedroom spot 2, Bedroom spot 3, Bedroom spot 4" state="False" when="any" modifier="delete" />
+			<Action name="setBedroomLightsDeactivationTimer" sourcesystem="hue" source="Bedroom spot 1, Bedroom spot 2, Bedroom spot 3, Bedroom spot 4" state="False" when="+5m" />
+		</Actions>
+	</ScriptAction>-->
+</ScriptActions>

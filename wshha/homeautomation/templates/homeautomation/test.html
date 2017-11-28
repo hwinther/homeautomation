@@ -1,0 +1,152 @@
+{% extends "homeautomation/base.html" %}
+
+{% block title %}WSH | HA{% endblock %}
+
+{% block extracss %}
+<style type="text/css">
+.container {
+  background-color: blue;
+}
+
+.container2 {
+  background-color: green;
+}
+
+.innercontainer {
+  position: relative;
+  width: 100%;
+}
+
+.container .cheader, .container2 .cheader {
+
+  width: 50px;
+  background-color: white;
+}
+
+.container .citem {
+  height: 50px;
+  position: absolute;
+  width: 50px;
+  background-color: green;
+  word-wrap: break-word;
+  padding: 5px;
+}
+
+.container2 .citem {
+  height: 50px;
+  position: absolute;
+  width: 80px;
+  background-color: red;
+  word-wrap: break-word;
+  padding: 5px;
+}
+
+.myButton {
+	-moz-box-shadow:inset 0px 1px 0px 0px #97c4fe;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #97c4fe;
+	box-shadow:inset 0px 1px 0px 0px #97c4fe;
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #3d94f6), color-stop(1, #1e62d0));
+	background:-moz-linear-gradient(top, #3d94f6 5%, #1e62d0 100%);
+	background:-webkit-linear-gradient(top, #3d94f6 5%, #1e62d0 100%);
+	background:-o-linear-gradient(top, #3d94f6 5%, #1e62d0 100%);
+	background:-ms-linear-gradient(top, #3d94f6 5%, #1e62d0 100%);
+	background:linear-gradient(to bottom, #3d94f6 5%, #1e62d0 100%);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#3d94f6', endColorstr='#1e62d0',GradientType=0);
+	background-color:#3d94f6;
+	-moz-border-radius:6px;
+	-webkit-border-radius:6px;
+	border-radius:6px;
+	border:1px solid #337fed;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:15px;
+	font-weight:bold;
+	padding:6px 24px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #1570cd;
+}
+.myButton:hover {
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #1e62d0), color-stop(1, #3d94f6));
+	background:-moz-linear-gradient(top, #1e62d0 5%, #3d94f6 100%);
+	background:-webkit-linear-gradient(top, #1e62d0 5%, #3d94f6 100%);
+	background:-o-linear-gradient(top, #1e62d0 5%, #3d94f6 100%);
+	background:-ms-linear-gradient(top, #1e62d0 5%, #3d94f6 100%);
+	background:linear-gradient(to bottom, #1e62d0 5%, #3d94f6 100%);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#1e62d0', endColorstr='#3d94f6',GradientType=0);
+	background-color:#1e62d0;
+}
+.myButton:active {
+	position:relative;
+	top:1px;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+
+<div class="">
+  <div id="AvailableControls" class="innercontainer container" id="dynamictest">
+	<span class="cheader">Available controls</span>
+	<!--div class="citem">Child Element 9</div>
+	<div class="citem">Child Element 10</div>
+	
+	<div class="citem"><a href="#" class="myButton">blue</a></div-->
+  </div>
+  
+  <div id="ActiveControls" class="innercontainer container2">
+	<!--span class="cheader">Active controls</span-->
+
+	<div class="citem"><a href="#" class="wsCecPowerOn myButton" data-arg-a="0">On</a></div>
+	<div class="citem"><a href="#" class="wsCecPowerOn myButton" data-arg-a="5">On (audio)</a></div>
+	<div class="citem"><a href="#" class="WS_HAJointSpace_SetInputKey myButton" data-arg-a="Standby">Off</a></div>
+	<div class="citem"><a href="#" class="WS_HAJointSpace_SetInputKey myButton" data-arg-a="Mute">Mute</a></div>
+	<div class="citem"><a href="#" class="WS_HAJointSpace_SetInputKey myButton" data-arg-a="AmbilightOnOff">AmbilightOnOff</a></div>
+	<div class="citem"><a href="#" class="WS_HAJointSpace_SetInputKey myButton" data-arg-a="VolumeUp">VolumeUp</a></div>
+	<div class="citem"><a href="#" class="WS_HAJointSpace_SetInputKey myButton" data-arg-a="VolumeDown">VolumeDown</a></div>
+	<div class="citem"><a href="#" class="WS_HASerialIR_WriteByte myButton" data-arg-a="2">AudioIn</a></div>
+	<div class="citem"><a href="#" class="WS_HASerialIR_WriteByte myButton" data-arg-a="7">AudioArc</a></div>
+	<div class="citem"><a href="#" class="WS_HASerialIR_WriteByte myButton" data-arg-a="9">BassUp</a></div>
+	<div class="citem"><a href="#" class="WS_HASerialIR_WriteByte myButton" data-arg-a="10">BassDown</a></div>
+	<!--div class="citem"><input type="text" id="osdtext" name="osdtext" />
+	<button id="btnOsdtext" name="btnOsdtext" class="wsCecOsdText" data-arg-a="0" data-arg-related-input="osdtext">Set</button></div-->
+  </div>
+</div>
+
+<button id="btnSave">Save</button>
+{% endblock %}
+
+{% block extrajs %}
+<script src="/static/js/index-wsdef.js"></script>
+<script type="text/javascript">
+$(window).load(function() {
+	$(".se-pre-con").fadeOut("slow");
+});
+
+$( document ).ready(function() {
+	$('.innercontainer').shapeshift({
+		dragWhitelist: '.tdraggable',
+	});
+
+    function myFunction() {
+		//console.log('adding element');
+		//$('#dynamictest').html($('#dynamictest').html() + '<div class="citem">Child Element x</div>');
+		//$('#dynamictest').shapeshift();
+	}
+	myVar = setTimeout(myFunction, 3000);
+	
+	$('#btnSave').click(function() {
+		$('#activecontainer .citem a').each(function( index ) {
+			var classname = $( this ).prop('class');
+			var arga = $( this ).data('arg-a');
+			var value = $( this ).html();
+			console.log('classname=' + classname + ' arg a=' + arga + ' value=' + value);
+			
+		});
+	});
+});
+</script>
+{% endblock %}

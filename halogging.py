@@ -5,6 +5,7 @@ import logging, os
 
 def InitLogging(filepath=None, loglevel=None):
     if filepath is None:
+        print('Logging to: ' + BASE_DIR + os.sep + 'ha.log')
         filepath = BASE_DIR + os.sep + 'ha.log'
     if loglevel is None:
         loglevel = LOGLEVEL
