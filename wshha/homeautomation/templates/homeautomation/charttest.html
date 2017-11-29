@@ -1,0 +1,22 @@
+{% extends "homeautomation/base.html" %}
+
+{% block extracss %}
+
+{% endblock %}
+
+{% block head %}
+    <script src="http://yui.yahooapis.com/3.10.0/build/yui/yui-min.js"></script>
+    <script src="/static/js/index-wsdef.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+{% endblock %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        google.load("visualization", "1", {packages:["corechart"]});
+    </script>
+{% endblock %}
+
+{% block content %}
+    {{ chart.as_html }}
+    {{ chart2.as_html }}
+{% endblock %}

@@ -6,6 +6,9 @@ import numpy as np
 import matplotlib
 matplotlib.use("Pdf")
 import matplotlib.pyplot as plt
+from graphos.sources.simple import SimpleDataSource
+from graphos.renderers.gchart import LineChart as GoogleLineChart
+from graphos.renderers.yui import LineChart as YuiLineChart
 
 
 # This is based on original code from http://stackoverflow.com/a/22649803
@@ -118,3 +121,37 @@ def plotdata(request):
     response = HttpResponse(content_type="image/png")
     response.write(open(figfilepath, 'r').read())
     return response
+
+
+def charttest(request):
+    """
+    data = [
+    ['Year', 'Sales', 'Expenses'],
+    [2004, 1000, 400],
+    [2005, 1170, 460],
+    [2006, 660, 1120],
+    [2007, 1030, 540]
+    ]
+    """
+    data = [
+        ['Time', 'Temperature', 'Humidity']
+    ]
+    sen01 = Sensor.objects.get(name='sensor01')
+    for temp in TemperatureDataPoint.objects.filter(sensor=sen01):
+        data.append([temp.created, temp.temperature, temp.humidity])
+
+    data2 = [
+        ['Time', 'Temperature', 'Humidity']
+    ]
+    sen02 = Sensor.objects.get(name='sensor02')
+    for temp in TemperatureDataPoint.objects.filter(sensor=sen02):
+        data2.append([temp.created, temp.temperature, temp.humidity])
+
+    # DataSource object
+    data_source = SimpleDataSource(data=data)
+    data_source2 = SimpleDataSource(data=data2)
+    # Chart object
+    chart = GoogleLineChart(data_source)
+    chart2 = GoogleLineChart(data_source2)
+    context = {'chart': chart, 'chart2': chart2}
+    return render(request, 'homeautomation/charttest.html', context)

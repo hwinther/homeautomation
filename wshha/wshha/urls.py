@@ -25,4 +25,5 @@ urlpatterns = [
     url(r'^color/(?P<lightid>[\w ]+)/(?P<colortype>\w+)/(?P<x>[0-9]+)/(?P<y>[0-9]+)/(?P<z>[0-9]+)/$', views.color, name='color'),
     url(r'^tv/remote/(?P<command>\w+)/$', views.tv_remote, name='tv_remote'),
     url(r'^plotdata/$', views.plotdata, name='plotdata'),
+    url(r'^charttest/$', views.charttest, name='charttest'),
 ]

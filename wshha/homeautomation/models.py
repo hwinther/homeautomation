@@ -85,3 +85,17 @@ class TVAction(Action):
     mute = models.NullBooleanField(null=True, blank=True)
     volume = models.IntegerField(null=True, blank=True)
     source = models.TextField(max_length=20, null=True, blank=True)
+
+
+class Sensor(models.Model):
+    name = models.CharField(max_length=128)
+
+
+class TemperatureDataPoint(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    temperature = models.IntegerField()
+    humidity = models.IntegerField()
+    sensor = models.ForeignKey(Sensor)
+
+    class Meta(object):
+        ordering = ['created']

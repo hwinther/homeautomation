@@ -13,6 +13,7 @@ from phue import Bridge
 
 def LightStatusUpdate(b):
     lights = b.get_light_objects('name')
+    system_hue, created = LightSourceSystem.objects.get_or_create(name='hue')
     for _light in lights:
         x = lights[_light]
         # print x.name
@@ -22,7 +23,7 @@ def LightStatusUpdate(b):
             l = None
         if l == None:
             print 'creating new hue db obj', x.name
-            l = HueLight(name=x.name, source=LightSourceSystem.objects.get(name='hue'), state=x.on, hue=x.hue, brightness=x.brightness, x=x.xy[0], y=x.xy[1])
+            l = HueLight(name=x.name, source=system_hue, state=x.on, hue=x.hue, brightness=x.brightness, x=x.xy[0], y=x.xy[1])
             # colormode=x.colormode
             # colortemp=x.colortemp
             l.save()
@@ -103,7 +104,7 @@ class Command(BaseCommand):
 
     def init(self):
         print '\nstarting up hue environment..'
-        b = Bridge('192.168.1.2')
+        b = Bridge('10.20.2.2')
         print 'detected hue devices:'
         lights = LightStatusUpdate(b)
         print '\nstarting up wemo environment..'

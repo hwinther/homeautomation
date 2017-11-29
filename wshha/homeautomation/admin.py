@@ -10,3 +10,6 @@ admin.site.register(TV)
 admin.site.register(Action)
 admin.site.register(LightAction)
 admin.site.register(TVAction)
+
+admin.site.register(TemperatureDataPoint)
+admin.site.register(Sensor)
