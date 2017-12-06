@@ -26,10 +26,13 @@ class Command(BaseCommand):
         sen02, created = Sensor.objects.get_or_create(name='sensor02')
         sensor02 = sensor02client.Sensor02UdpClient('sensor02.iot.oh.wsh.no', bind_port=9232)
         sensor02_value = sensor02.dht11.value()
-        print('sensor02 dht11 %s' % repr(sensor02_value))
+        sensor02_value2 = sensor02.dsb.value()
+        print('sensor02 dht11 %s ds18b20 %s' % (repr(sensor02_value), repr(sensor02_value2)))
         #
         if sensor02_value is not None and sensor02_value.find('c') != -1:
             t, h = sensor02_value.split('c', 2)
+            if sensor02_value2 is not None and sensor02_value2.find('.') != -1:
+                t = float(sensor02_value2)
             TemperatureDataPoint(temperature=int(t), humidity=int(h), sensor=sen02).save()
         #
         # nt, created = Sensor.objects.get_or_create(name='nodetest')
