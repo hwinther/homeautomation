@@ -1,0 +1,10 @@
+django
+phue
+ouimeaux
+serial
+web.py
+Image
+matplotlib
+numpy
+django-graphos
+transitions
