@@ -1,11 +1,17 @@
 #!/usr/bin/python
-from ledmatrixbase import LEDMatrixBase
+# coding=utf-8
 import logging
+import os
+import select
+import socket
+import threading
+import time
 
-import socket, select, time, os, sys, threading
-from hacommon import QueueList, SerializableQueueItem, SerializableQueueItem
+from hacommon import QueueList, SerializableQueueItem
+from ledmatrixbase import LEDMatrixBase
 
-SOCKET_SPLITCHARS = '\x01\x02\x03\x04'  # needs to be set on both client and server side, used to determine the beginning and end of commands
+# needs to be set on both client and server side, used to determine the beginning and end of commands
+SOCKET_SPLITCHARS = '\x01\x02\x03\x04'
 # TODO: the above and below should be fetched from config
 SOCKET_UDP_LISTEN_ADDR = ('0.0.0.0', 5111)
 
@@ -33,13 +39,14 @@ class SocketCommandThread(threading.Thread):
                 self.parent.cmdqueue.remove(item)
 
     def process(self, item):
-        '''Socket command handler that blocks while perfroming rgbmatrix actions'''
+        """Socket command handler that blocks while perfroming rgbmatrix actions"""
         # set pixel command: 127 X Y R G B
         #				    0   1 2 3 4 5
         cmd = item.command
         addr = item.addr
 
-        if len(cmd) == 0: return  # must be invalid
+        if len(cmd) == 0:
+            return  # must be invalid
         datacmd = cmd[0]
         dataarg = ''
         if len(cmd) > 1:
@@ -49,23 +56,29 @@ class SocketCommandThread(threading.Thread):
             logging.info('Clearing screen')
             self.parent.queue.append(SerializableQueueItem(self.parent.__class__.__name__, self.parent.rgbm.Clear))
         elif ord(datacmd) == 127 and len(cmd) == 6:
-            x, y, r, g, b = ord(dataarg[0]), ord(dataarg[1]), ord(dataarg[2]), ord(dataarg[3]), ord(dataarg[4])
-            logging.info('Setting matrix pixel at x=' + str(x) + ' y=' + str(y) + ' to color r=' + str(r) + ',g=' + str(g) + ',b=' + str(b))
-            self.parent.queue.append(SerializableQueueItem(self.parent.__class__.__name__, self.parent.rgbm.SetPixel, x, y, r, g, b))
+            x, y, r, g, b = ord(dataarg[0]), ord(dataarg[1]), ord(dataarg[2]), ord(dataarg[3]),\
+                            ord(dataarg[4])
+            logging.info('Setting matrix pixel at x=' + str(x) + ' y=' + str(y) + ' to color r=' + str(r) +
+                         ',g=' + str(g) + ',b=' + str(b))
+            self.parent.queue.append(SerializableQueueItem(self.parent.__class__.__name__, self.parent.rgbm.SetPixel,
+                                                           x, y, r, g, b))
         elif ord(datacmd) == 128:
             logging.info('Displaying image')
-            self.parent.queue.append(SerializableQueueItem(self.parent.__class__.__name__, self.parent.rgbm.SetMatrixFromImgBase64, dataarg))
+            self.parent.queue.append(SerializableQueueItem(self.parent.__class__.__name__,
+                                                           self.parent.rgbm.SetMatrixFromImgBase64, dataarg))
         elif ord(datacmd) == 129:
             filepath = '/home/pi/wav/' + dataarg
             if not os.path.exists(filepath):
                 logging.info('(Play wav) File does not exist: ' + filepath)
                 return
             logging.info('Playing wav file with audio visualizer:' + filepath)
-            self.parent.queue.append(SerializableQueueItem(self.parent.__class__.__name__, self.parent.rgbm.AudioVisualize, filepath))
+            self.parent.queue.append(SerializableQueueItem(self.parent.__class__.__name__,
+                                                           self.parent.rgbm.AudioVisualize, filepath))
         elif ord(datacmd) == 130:
             # stop playing wav file
             logging.info('Attempting to stop audio thread')
-            # self.queue.append(SerializableQueueItem(self.rgbm.StopAudioVisualize)) #will not work because the queuehandler is waiting for is_idle
+            # will not work because the queuehandler is waiting for is_idle
+            # self.queue.append(SerializableQueueItem(self.rgbm.StopAudioVisualize))
             if self.parent.rgbm.is_audiovisualizing():
                 self.parent.rgbm.StopAudioVisualize()
         elif ord(datacmd) == 131:
@@ -86,6 +99,7 @@ class LEDMatrixSocketServiceUDP(LEDMatrixBase):
         self.bufferdict = {}  # dictionary that keeps each clients buffer when the received data becomes segmented
         self.cmdqueue = QueueList()
         self.queuethread = None
+        self.sock = None
 
     def run(self):  # TODO: wrap most of this in a try with logging and maybe thread shutdown on exceptions
         self.queuethread = SocketCommandThread(self)
@@ -102,23 +116,27 @@ class LEDMatrixSocketServiceUDP(LEDMatrixBase):
                 data, addr = self.sock.recvfrom(1024 * 16)
                 self.bufferhandler(data, addr)
 
-        if self.queuethread != None and self.queuethread.isAlive():
+        if self.queuethread is not None and self.queuethread.isAlive():
             self.queuethread.stop_event.set()
         LEDMatrixBase.finalize(self)
 
     def bufferhandler(self, d, a):
-        '''Handles your socket buffers and shit, yo'''
-        if not a in self.bufferdict.keys(): self.bufferdict[a] = ''
+        """Handles your socket buffers and shit, yo"""
+        if a not in self.bufferdict.keys():
+            self.bufferdict[a] = ''
         buff = self.bufferdict[a] + d
         l = buff.split(SOCKET_SPLITCHARS)
-        if len(l) == 0: return
+        if len(l) == 0:
+            return
         if l[-1] == '':  # complete data
             for x in l:
-                if x == '': continue
+                if x == '':
+                    continue
                 self.cmdqueue.append(SocketCommand(x, a))
                 self.bufferdict[a] = ''  # clear buffer just to be sure
         else:
             for x in l[:-1]:
-                if x == '': continue
+                if x == '':
+                    continue
                 self.cmdqueue.append(SocketCommand(x, a))
             self.bufferdict[a] = l[-1]  # last data added back to buffer

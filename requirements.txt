@@ -1,10 +1,12 @@
 django
 phue
 ouimeaux
-serial
+pyserial
 web.py
 Image
 matplotlib
 numpy
 django-graphos
 transitions
+gspread
+oauth2client

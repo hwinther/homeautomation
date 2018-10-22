@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import logging
+# coding=utf-8
 from datetime import datetime
 
 letters = {
@@ -92,9 +92,10 @@ letters = {
 
 
 def displayLetter(matrix, letter, x_rel, y_rel, r, g, b):
-    '''Display letter with RBGmatrix instance, starting at x_rel/y_rel and using colors r, g, b
-    Returns new relative position that is clear off the letter'''
+    """Display letter with RBGmatrix instance, starting at x_rel/y_rel and using colors r, g, b
+    Returns new relative position that is clear off the letter"""
     # print 'displaying letter ' + letter + ' at ' + str(x_rel) + ', ' + str(y_rel)
+    x = 0
     y = y_rel
     firstRun = True
     iteration = 0
@@ -110,8 +111,8 @@ def displayLetter(matrix, letter, x_rel, y_rel, r, g, b):
 
 
 def displayText(matrix, text, x_rel, y_rel, r, g, b):
-    '''Display series of letters with RGBmatrix instance, starting at x_rel/y_rel and using colors r, g, b
-    Returns new relative position that is clear off the text'''
+    """Display series of letters with RGBmatrix instance, starting at x_rel/y_rel and using colors r, g, b
+    Returns new relative position that is clear off the text"""
     x = x_rel
     y = y_rel
     for letter in text:
@@ -122,7 +123,7 @@ def displayText(matrix, text, x_rel, y_rel, r, g, b):
 
 
 def displayCurrentTime(matrix, x_rel, y_rel, r, g, b):
-    '''Displays current hour and minute with RBGmatrix instance at x_rel/y_rel and using colors r, g, b'''
+    """Displays current hour and minute with RBGmatrix instance at x_rel/y_rel and using colors r, g, b"""
     dtime = datetime.now().strftime('%H:%M')
     y = y_rel
     x, y = displayText(matrix, dtime, x_rel, y, r, g, b)

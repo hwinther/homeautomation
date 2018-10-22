@@ -1,5 +1,6 @@
 #!/usr/bin/python
-import logging, time
+# coding=utf-8
+import time
 
 
 def CylonScan(rgbmatrix):

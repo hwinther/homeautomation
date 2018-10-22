@@ -1,6 +1,9 @@
 #!/usr/bin/python
+# coding=utf-8
+import logging
+import os
+
 from hasettings import BASE_DIR, LOGLEVEL
-import logging, os
 
 
 def InitLogging(filepath=None, loglevel=None):

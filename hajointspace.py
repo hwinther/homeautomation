@@ -1,22 +1,29 @@
 #!/usr/bin/python
-import logging, json, time, urllib2, traceback
+# coding=utf-8
+import json
+import logging
+import time
+import traceback
+import urllib2
+
 from habase import HomeAutomationQueueThread
 from hacommon import WebCache
-from webservicecommon import webservice_state_instances_add, WebService_Dynamic_Set, WebService_Dynamic_Get, WSBinding, WSParam, ws_register_class, ws_register_definition, webservice_class_instances_add
 from hasettings import HA_JOINTSPACE_URI
+from webservicecommon import webservice_state_instances_add, WebService_Dynamic_Set, WebService_Dynamic_Get,\
+    WSBinding, WSParam, ws_register_class, ws_register_definition, webservice_class_instances_add
 
 
 # region Web methods
 class WebService_JointSpace_Dynamic_Set(WebService_Dynamic_Set):
     def __init__(self, *args, **kwargs):
         # self.currentInstance = CurrentInstance
-        super(WebService_JointSpace_Dynamic_Set, self).__init__(*args, **kwargs)
+        WebService_Dynamic_Set.__init__(self, *args, **kwargs)
 
 
 class WebService_JointSpace_Dynamic_Get(WebService_Dynamic_Get):
     def __init__(self, *args, **kwargs):
         # self.currentInstance = CurrentInstance
-        super(WebService_JointSpace_Dynamic_Get, self).__init__(*args, **kwargs)
+        WebService_Dynamic_Get.__init__(self, *args, **kwargs)
 # endregion
 
 
@@ -24,10 +31,11 @@ class WebService_JointSpace_Dynamic_Get(WebService_Dynamic_Get):
 class HAJointSpace(HomeAutomationQueueThread):
     # region Webservice definitions
     webservice_definitions = [
-    #     WebServiceDefinition(
-    #         '/jointspace/remote/(\w+)', 'WS_JS_set_input_key', '/jointspace/remote/', 'wsJSRemoteKey'),
-    #     WebServiceDefinition(
-    #         '/jointspace/remote/(\w+)', 'WebService_JointSpace_Dynamic_Set', '/jointspace/remote/', 'wsJSRemoteKey', 'set_input_key', ['key']),
+        # WebServiceDefinition(
+        # '/jointspace/remote/(\w+)', 'WS_JS_set_input_key', '/jointspace/remote/', 'wsJSRemoteKey'),
+        # WebServiceDefinition(
+        # '/jointspace/remote/(\w+)', 'WebService_JointSpace_Dynamic_Set', '/jointspace/remote/', 'wsJSRemoteKey',
+        #  'set_input_key', ['key']),
     ]
     # webservice_register_class = 'WebService_JointSpace_Dynamic_Set'
     # endregion
@@ -36,14 +44,15 @@ class HAJointSpace(HomeAutomationQueueThread):
     def __init__(self, name, callback_function, queue, threadlist, baseurl=None):
         HomeAutomationQueueThread.__init__(self, name, callback_function, queue, threadlist)
 
-        if baseurl == None:
+        if baseurl is None:
             baseurl = HA_JOINTSPACE_URI
         self.baseurl = baseurl
 
         self.webcache = {}
+        self.timecheck = None
 
-        #global CurrentInstance
-        #CurrentInstance = self
+        # global CurrentInstance
+        # CurrentInstance = self
 
     def get_json_status(self):
         # TODO: add cached values for volume and other relevant things
@@ -58,7 +67,7 @@ class HAJointSpace(HomeAutomationQueueThread):
                 'sources': self.get_sources(),
                 'sources_current': self.get_sources_current(),
             }})
-        except urllib2.URLError, e:
+        except urllib2.URLError as e:
             if e.reason.message == 'timed out':
                 return json.dumps({self.get_class_name(): {'Error': 'System offline'}})
             else:
@@ -129,7 +138,7 @@ class HAJointSpace(HomeAutomationQueueThread):
         """GET ambilight/mode"""
         return self.get_request_json('/1/ambilight/mode')
 
-    @ws_register_definition( WSBinding('WebService_JointSpace_Dynamic_Set', [WSParam('current', '(\w+)')]))
+    @ws_register_definition(WSBinding('WebService_JointSpace_Dynamic_Set', [WSParam('current', '(\w+)')]))
     def set_ambilight_mode(self, current):
         """POST ambilight/mode
         :rtype : bool
@@ -152,7 +161,9 @@ class HAJointSpace(HomeAutomationQueueThread):
         """GET ambilight/cached"""
         return self.get_request_json('/1/ambilight/cached')
 
-    @ws_register_definition( WSBinding('WebService_JointSpace_Dynamic_Set', [WSParam('r', '(\d+)'), WSParam('g', '(\d+)'), WSParam('b', '(\d+)')]) )
+    @ws_register_definition(WSBinding('WebService_JointSpace_Dynamic_Set', [WSParam('r', '(\d+)'),
+                                                                            WSParam('g', '(\d+)'),
+                                                                            WSParam('b', '(\d+)')]))
     def set_ambilight_cached(self, **kwargs):
         """POST ambilight/cached
         {
@@ -176,7 +187,8 @@ class HAJointSpace(HomeAutomationQueueThread):
         }"""
         return self.get_request_json('/1/audio/volume')
 
-    @ws_register_definition( WSBinding('WebService_JointSpace_Dynamic_Set', [WSParam('muted', '(\w+)'), WSParam('current', '(\d+)')]) )
+    @ws_register_definition(WSBinding('WebService_JointSpace_Dynamic_Set', [WSParam('muted', '(\w+)'),
+                                                                            WSParam('current', '(\d+)')]))
     def set_audio_volume(self, muted, current):
         """POST audio/volume"""
         return self.post_request('/1/audio/volume', muted=muted, current=current)
@@ -205,7 +217,7 @@ class HAJointSpace(HomeAutomationQueueThread):
         """GET channels/current"""
         return self.get_request_json('/1/channels/current')
 
-    @ws_register_definition( WSBinding('WebService_JointSpace_Dynamic_Set', [WSParam('id', '(\w+)')]) )
+    @ws_register_definition(WSBinding('WebService_JointSpace_Dynamic_Set', [WSParam('id', '(\w+)')]))
     def set_channels_current(self, id):
         """POST channels/current"""
         return self.post_request('/1/channels/current', id=id)
@@ -217,7 +229,7 @@ class HAJointSpace(HomeAutomationQueueThread):
     # endregion
 
     # region Input methods
-    @ws_register_definition( WSBinding('WebService_JointSpace_Dynamic_Set', [WSParam('key', '(\w+)', {
+    @ws_register_definition(WSBinding('WebService_JointSpace_Dynamic_Set', [WSParam('key', '(\w+)', {
         'Standby': 'Standby',
         'Back': 'Back',
         'Find': 'Find',
@@ -265,7 +277,7 @@ class HAJointSpace(HomeAutomationQueueThread):
         'Rewind': 'Rewind',
         'Record': 'Record',
         'Online': 'Online'
-    })]) )
+    })]))
     def set_input_key(self, key):
         """POST input/key"""
         return self.post_request('/1/input/key', key=key)
@@ -282,7 +294,7 @@ class HAJointSpace(HomeAutomationQueueThread):
         """GET sources/current"""
         return self.get_request_json('/1/sources/current')
 
-    @ws_register_definition( WSBinding('WebService_JointSpace_Dynamic_Set', [WSParam('id', '([\w\d]+)')]) )
+    @ws_register_definition(WSBinding('WebService_JointSpace_Dynamic_Set', [WSParam('id', '([\w\d]+)')]))
     def set_sources_current(self, id):
         """POST sources/current"""
         return self.post_request('/1/sources/current', id=id)

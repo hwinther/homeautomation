@@ -1,5 +1,10 @@
 #!/usr/bin/python
-import pickle, importlib, types, logging, time
+# coding=utf-8
+import importlib
+import logging
+import pickle
+import time
+import types
 
 
 class SerializableQueueItem:
@@ -10,7 +15,8 @@ class SerializableQueueItem:
         self.kwargs = kwargs
 
     def __call__(self):
-        # logging.debug('SerializableQueueItem func type: ' + str(type(self.func)) + ' callable? ' + str(callable(self.func)))
+        # logging.debug('SerializableQueueItem func type: ' + str(type(self.func)) + ' callable? ' +\
+        #  str(callable(self.func)))
         if type(self.func) == types.FunctionType or callable(self.func):
             self.func(*self.args, **self.kwargs)
         elif type(self.func) == types.StringType:
@@ -30,7 +36,10 @@ class ThreadList(list):
 
 
 class QueueList(list):
-    '''Yes, this strictly isnt necessary due to the nature of lists in python (thread safety), but it still feels better being explicit like this'''
+    """
+    Yes, this strictly isnt necessary due to the nature of lists in python (thread safety),
+     but it still feels better being explicit like this
+    """
     pass  # could potentially override the append method to only allow SerializableQueueItems
 
 
@@ -96,5 +105,6 @@ def ignore_exception(exception=Exception, default_val=None):
         return wrapper
 
     return decorator
+
 
 int_try_parse = ignore_exception(ValueError)(int)

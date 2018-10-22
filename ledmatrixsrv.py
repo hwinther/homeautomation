@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# coding=utf-8
 from ledmatrixlib import InitLogging, Adafruit_RGBmatrix, StateSocket
 
 InitLogging()

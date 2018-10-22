@@ -1,5 +1,10 @@
 #!/usr/bin/python
-import logging, threading, time, json
+# coding=utf-8
+import json
+import logging
+import threading
+import time
+
 from hacommon import QueueList, ThreadList
 
 
@@ -34,15 +39,19 @@ class HomeAutomationQueueThread(HomeAutomationThread):
             threadlist = ThreadList()
         self.threadlist = threadlist
 
-    def pre_processqueue(self):  # Have the subclasses override processqueue and call super afterwards to get the same effect
-        pass  # bad naming, before processing queue items at all
+    def pre_processqueue(self):
+        # TODO: Have the subclasses override processqueue and call super afterwards to get the same effect
+        pass
+        # bad naming, before processing queue items at all
  
     def processqueue(self):
         self.pre_processqueue()
         clsname = self.get_class_name()
         while not self.stop_event.is_set():
             for item in [i for i in self.queue if i.cls == clsname]:
-                # TODO: should really be True.. but this will be used until the modules return the right default value via decorator
+                # TODO: should really be True.. but this will be used until the modules return the right default
+                # (continued) value via decorator
+
                 # logging.debug('Exec queue item: ' + `item`)
                 item_return_value = self.exec_item(item)
                 # logging.debug('Exec queue item ret: ' + `item_return_value`)

@@ -1,11 +1,13 @@
 #!/usr/bin/python
-import logging
+# coding=utf-8
 import json
+import logging
 import time
+
 from habase import HomeAutomationQueueThread
-from webservicecommon import webservice_json, WebServiceDefinition, webservice_class_instances_add,\
-    ws_register_class, ws_register_definition, WSBinding, WSParam, WebService_Dynamic_Set
 from hacommon import int_try_parse
+from webservicecommon import webservice_json, WebServiceDefinition, webservice_class_instances_add, \
+    ws_register_class, WebService_Dynamic_Set
 
 dataset = [
     {'id': 1,
@@ -59,7 +61,7 @@ dataset = [
 class WebService_TestWS_SetValue(WebService_Dynamic_Set):
     def __init__(self, *args, **kwargs):
         # self.currentInstance = CurrentInstance
-        super(WebService_TestWS_SetValue, self).__init__(*args, **kwargs)
+        WebService_Dynamic_Set.__init__(self, *args, **kwargs)
 
 
 # region Web methods
@@ -113,7 +115,7 @@ class HATestApp(HomeAutomationQueueThread):
         # webservice_class_instances_add(self.get_class_name(), self)
         # TODO: can this be solved via a decorator?
         # threadmanager (main thread) should also keep this updated.. a good example for signals
-        #if time.time() - self.timestopcheck > 15:
+        # if time.time() - self.timestopcheck > 15:
         #    logging.debug('crashing module for testing purposes')
         #    raise IOError('test exception')
         super(HATestApp, self).pre_processqueue()

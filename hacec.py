@@ -1,21 +1,27 @@
 #!/usr/bin/python
-import logging, json, time, os
+# coding=utf-8
+import json
+import logging
+import os
+import time
+
 from habase import HomeAutomationQueueThread
 from hacommon import SerializableQueueItem
-from webservicecommon import WebServiceDefinition, webservice_jsonp, webservice_state_instances_add, WebService_Dynamic_Get, WebService_Dynamic_Set, webservice_class_instances_add, WSBinding, WSParam, ws_register_class, ws_register_definition
+from webservicecommon import WebServiceDefinition, webservice_jsonp, webservice_state_instances_add, \
+    WebService_Dynamic_Get, WebService_Dynamic_Set, webservice_class_instances_add
 
 
 # region Web methods
 class WebService_Cec_Dynamic_Set(WebService_Dynamic_Set):
     def __init__(self, *args, **kwargs):
         # self.currentInstance = CurrentInstance
-        super(WebService_Cec_Dynamic_Set, self).__init__(*args, **kwargs)
+        WebService_Dynamic_Set.__init__(self, *args, **kwargs)
 
 
 class WebService_Cec_Dynamic_Get(WebService_Dynamic_Get):
     def __init__(self, *args, **kwargs):
         # self.currentInstance = CurrentInstance
-        super(WebService_Cec_Dynamic_Get, self).__init__(*args, **kwargs)
+        WebService_Dynamic_Get.__init__(self, *args, **kwargs)
 
 
 class WebService_CecPowerOn(object):
@@ -28,7 +34,9 @@ class WebService_CecPowerOn(object):
             pass
         if 1:
             logging.info('Cec power on: ' + id)
-            self.currentInstance.queue.append(SerializableQueueItem(HACec.__name__, self.currentInstance.cec_client_power_on, _id)) #:\
+            self.currentInstance.queue.append(SerializableQueueItem(HACec.__name__,
+                                                                    self.currentInstance.cec_client_power_on, _id))
+            # :\ - idk why, line length?
         return self.currentInstance.get_json_status()
 
 
@@ -42,7 +50,8 @@ class WebService_CecStandby(object):
             pass
         if 1:
             logging.info('Cec power on: ' + id)
-            self.currentInstance.queue.append(SerializableQueueItem(HACec.__name__, self.currentInstance.cec_client_standby, _id))
+            self.currentInstance.queue.append(SerializableQueueItem(HACec.__name__,
+                                                                    self.currentInstance.cec_client_standby, _id))
         return self.currentInstance.get_json_status()
 
 
@@ -55,7 +64,8 @@ class WebService_CecOsdText(object):
         except ValueError:
             pass
         logging.info('Cec set osd text on dev ' + id + ': ' + text)
-        self.currentInstance.queue.append(SerializableQueueItem(HACec.__name__, self.currentInstance.cec_client_osd, _id, text))
+        self.currentInstance.queue.append(SerializableQueueItem(HACec.__name__, self.currentInstance.cec_client_osd,
+                                                                _id, text))
         return self.currentInstance.get_json_status()
 # endregion
 
@@ -75,6 +85,7 @@ class HACec(HomeAutomationQueueThread):
         HomeAutomationQueueThread.__init__(self, name, callback_function, queue, threadlist)
 
         self.devices = []
+        self.timecheck = None
 
         # global CurrentInstance
         # CurrentInstance = self
@@ -82,13 +93,13 @@ class HACec(HomeAutomationQueueThread):
     def get_json_status(self):
         cecdevices = []
         for x in self.devices:
-            powerstatus='Unknown'
+            powerstatus = 'Unknown'
             try:
                 powerstatus = self.devices[x].is_on()
             except:
                 pass
-            cecdevices.append( {'Name':self.devices[x].osd_string, 'PowerStatus':powerstatus} )
-        return json.dumps({self.get_class_name(): { 'cecdevices': cecdevices } })
+            cecdevices.append({'Name': self.devices[x].osd_string, 'PowerStatus': powerstatus})
+        return json.dumps({self.get_class_name(): {'cecdevices': cecdevices}})
 
     def pre_processqueue(self):
         logging.info('CEC module initialized')
@@ -111,7 +122,7 @@ class HACec(HomeAutomationQueueThread):
 
     def cec_client_power_on(self, id):
         logging.debug('Power on: ' + str(id))
-        cmd='(echo on ' + str(id) + '; echo q) | cec-client -d 7 -s'
+        cmd = '(echo on ' + str(id) + '; echo q) | cec-client -d 7 -s'
         os.system(cmd)
 
     def cec_client_standby(self, id):
@@ -119,7 +130,7 @@ class HACec(HomeAutomationQueueThread):
         os.system('(echo standby ' + str(id) + '; echo q) | cec-client -d 7 -s')
 
     def cec_client_osd(self, id, txt):
-        rng = range(ord('A'), ord('z')) #only allow a-z and space
+        rng = range(ord('A'), ord('z'))  # only allow a-z and space
         rng.append(ord(' '))
         txt = ''.join([i for i in txt if ord(i) in rng])
         logging.debug('OSD text: ' + txt)
@@ -127,9 +138,9 @@ class HACec(HomeAutomationQueueThread):
 
     def updatedevices(self):
         pass
-        #logging.debug('Updating device list')
-        #import cec
-        #cec.init()
-        #self.devices = cec.list_devices()
-        #del(cec)
-        #d[0].osd_string
+        # logging.debug('Updating device list')
+        # import cec
+        # cec.init()
+        # self.devices = cec.list_devices()
+        # del(cec)
+        # d[0].osd_string

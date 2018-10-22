@@ -1,9 +1,11 @@
 #!/usr/bin/python
+# coding=utf-8
 
 # Going to just straight up rip this format from django settings ;)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os, logging
+import logging
+import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -21,7 +23,7 @@ INSTALLED_APPS = ('HAWebService',
 LOGLEVEL = logging.INFO
 
 REMOTE_APPS = [
-#     {'Address': ('rpi2.oh.wsh.no', 5111), 'INSTALLED_APPS': ('LEDMatrixCore')},
+    # {'Address': ('rpi2.oh.wsh.no', 5111), 'INSTALLED_APPS': ('LEDMatrixCore')},
 ]
 
 REMOTE_SOCKET_LISTEN_ADDRESS = ('0.0.0.0', 5111)

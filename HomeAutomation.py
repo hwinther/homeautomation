@@ -1,8 +1,9 @@
 #!/usr/bin/python
-from halogging import InitLogging
+# coding=utf-8
 from hacore import HACore
+from halogging import InitLogging
+
 # import pyreadline|readline # optional, will allow Up/Down/History in the console
-import code
 
 if __name__ == '__main__':
     InitLogging(filepath='/usr/wsh/ha.log')

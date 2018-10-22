@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# coding=utf-8
 import logging
 import web
 import json
@@ -6,7 +7,8 @@ import types
 import traceback
 import copy
 from habase import HomeAutomationQueueThread
-from webservicecommon import WebServiceDefinition, WebServiceDefinitionList, webservice_hawebservice_init, webservice_state_jsonp
+from webservicecommon import WebServiceDefinition, WebServiceDefinitionList, webservice_hawebservice_init, \
+    webservice_state_jsonp
 
 
 class WebService_State_JSONP(object):

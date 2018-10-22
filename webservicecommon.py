@@ -1,8 +1,9 @@
 #!/usr/bin/python
+# coding=utf-8
 import logging
-import web
 import types
-import json
+import web
+
 from hacommon import SerializableQueueItem
 
 
@@ -17,12 +18,13 @@ class WebServiceDefinition:
             jsenums = {}
         self.jsenums = jsenums
         self.methodname = methodname
-        if argnames is None: argnames = []
+        if argnames is None:
+            argnames = []
         self.argnames = argnames
 
     def __str__(self):
         return 'WebServiceDefinition(url=%s, cl=%s, jsurl=%s jsname=%s methodname=%s argnames=%s)' \
-               %(self.url, self.cl, self.jsurl, self.jsname, self.methodname, self.argnames)
+               % (self.url, self.cl, self.jsurl, self.jsname, self.methodname, self.argnames)
 
     def __repr__(self):
         return self.__str__()
@@ -37,7 +39,8 @@ class WSBinding(object):
         if type(webservice_class) == types.ClassType:
             webservice_class = webservice_class.__name__  # we only need the string representation
         self.webservice_class = webservice_class
-        if wsparameters is None: wsparameters = []
+        if wsparameters is None:
+            wsparameters = []
         self.wsparameters = wsparameters
 
 
@@ -45,7 +48,8 @@ class WSParam(object):
     def __init__(self, arg, arg_regex, arg_enums=None):
         self.arg = arg
         self.arg_regex = arg_regex
-        if arg_enums is None: arg_enums = {}
+        if arg_enums is None:
+            arg_enums = {}
         self.arg_enums = arg_enums
 
     def __str__(self):
@@ -53,12 +57,15 @@ class WSParam(object):
 
     def __repr__(self):
         return self.__str__()
+
+
 # endregion
 
 
 def webservicedecorator_globals_add(**kwargs):
     """
-    This decorator helper method will change the incoming parameters for all modules in an instance and is thus deprecated
+    This decorator helper method will change the incoming parameters for all modules in an
+     instance and is thus deprecated
     It is not a decorator per se but shares global namespace with it and is thus able to append to its global variable
     :param kwargs:
     :return:
@@ -70,7 +77,8 @@ def webservicedecorator_globals_add(**kwargs):
 
 def webservice_state_instances_add(name, inst):
     """
-    Module registration for the state decorator (helps webservice thread know which modules are relevant for the overall system state output)
+    Module registration for the state decorator (helps webservice thread know which modules are relevant for
+     the overall system state output)
     :param name:
     :param inst:
     :return:
@@ -84,8 +92,8 @@ def webservice_class_instances_add(classname, classinstance):
     Module registration to be done by the modules themselves after init
     This is required to use the shared web methods WebService_Dynamic_Set & WebService_Dynamic_Get as callbacks
     At runtime it will be passed on to the decorated GET call
-    :param name:
-    :param inst:
+    :param classinstance:
+    :param classname:
     :return:
     """
     global webservice_module_class_instances
@@ -95,14 +103,15 @@ def webservice_class_instances_add(classname, classinstance):
 def webservice_hawebservice_init(**kwargs):
     """
     Initializer & shorthand helper for webservice class similar to webservice_state_instances_add
-    Registers "common" global variables SharedQueue and ThreadList - now deprecated to decopule/unconfuse application flow and variable sharing in general
+    Registers "common" global variables SharedQueue and ThreadList - now deprecated to decopule/unconfuse
+     application flow and variable sharing in general
     :param kwargs:
     :return:
     """
-    global webservice_globals # now deprecated
+    global webservice_globals  # now deprecated
     webservice_globals = {}
     for key, value in kwargs.iteritems():
-        webservice_globals[key] = value # perhaps just clone/copy the kwargs dict directly?
+        webservice_globals[key] = value  # perhaps just clone/copy the kwargs dict directly?
     global webservice_state_instances
     webservice_state_instances = {}
     global webservice_module_class_instances
@@ -115,12 +124,14 @@ def webservice_state_jsonp(f):
     :param f:
     :return:
     """
+
     def decorated(*args, **kwargs):
         callback_name = web.input(callback='jsonCallback').callback
         web.header('Content-Type', 'application/javascript')
         for key, value in webservice_state_instances.iteritems():
             kwargs[key] = value
-        return '%s(%s)' % (callback_name, f(*args, **kwargs) )
+        return '%s(%s)' % (callback_name, f(*args, **kwargs))
+
     return decorated
 
 
@@ -130,6 +141,7 @@ def webservice_json(f):
     :param f:
     :return: json
     """
+
     def decorated(*args, **kwargs):
         web.header('Content-Type', 'application/javascript')
         decorator = args[0]
@@ -142,7 +154,8 @@ def webservice_json(f):
             decorator.currentInstance = None
 
         retval = f(*args, **kwargs)
-        return '%s' % (retval)
+        return '%s' % retval
+
     return decorated
 
 
@@ -152,6 +165,7 @@ def webservice_jsonp(f):
     :param f:
     :return: jsonp
     """
+
     def decorated(*args, **kwargs):
         callback_name = web.input(callback='jsonCallback').callback
         web.header('Content-Type', 'application/javascript')
@@ -169,6 +183,7 @@ def webservice_jsonp(f):
 
         retval = f(*args, **kwargs)
         return '%s(%s)' % (callback_name, retval)
+
     return decorated
 
 
@@ -177,21 +192,22 @@ def ws_register_class(cls):
     cls._webservice_definitions = []
     for methodname in dir(cls):
         method = getattr(cls, methodname)
-        if hasattr(method,'_prop'): # url, cl, jsurl, jsname, methodname=None, argnames
+        if hasattr(method, '_prop'):  # url, cl, jsurl, jsname, methodname=None, argnames
             for wsbinding in method._prop:
                 jsenums = {}
                 for p in wsbinding.wsparameters:
                     jsenums[p.arg] = p.arg_enums
 
                 wsdi = WebServiceDefinition(
-                    url = '/'+cls.__name__+'/'+methodname+'/' + '/'.join([i.arg_regex for i in wsbinding.wsparameters]),
-                    cl = wsbinding.webservice_class, # cls.webservice_register_class,
-                    jsurl = '/'+cls.__name__+'/'+methodname+'/',
-                    jsname = 'WS_' + cls.__name__ + '_' + ''.join([i.capitalize() for i in methodname.split('_')]),
-                    jsenums = jsenums, # [{i.arg: i.arg_enums} for i in wsbinding.wsparameters],
-                    methodname = methodname,
-                    argnames = [i.arg for i in wsbinding.wsparameters]
-                    )
+                    url='/' + cls.__name__ + '/' + methodname + '/' + '/'.join(
+                        [i.arg_regex for i in wsbinding.wsparameters]),
+                    cl=wsbinding.webservice_class,  # cls.webservice_register_class,
+                    jsurl='/' + cls.__name__ + '/' + methodname + '/',
+                    jsname='WS_' + cls.__name__ + '_' + ''.join([i.capitalize() for i in methodname.split('_')]),
+                    jsenums=jsenums,  # [{i.arg: i.arg_enums} for i in wsbinding.wsparameters],
+                    methodname=methodname,
+                    argnames=[i.arg for i in wsbinding.wsparameters]
+                )
                 # logging.info(wsdi)
                 cls._webservice_definitions.append(wsdi)
     return cls
@@ -199,18 +215,25 @@ def ws_register_class(cls):
 
 def ws_register_definition(*args):
     def wrapper(func):
-        func._prop=args
+        func._prop = args
         return func
+
     return wrapper
 
 
 class WebService_Dynamic_Set(object):
     currentInstance = None
 
+    def __init__(self, *args, **kwargs):
+        # TODO: these are supposed to be given via OOP possible? its a minor repeat pattern
+        self.parentClass = None
+        self.methodname = None
+
     @webservice_jsonp
     def GET(self, *args, **kwargs):
-        path_parts = web.ctx['environ']['PATH_INFO'].split('/') # ['', 'HAJointSpace', 'set_input_key', 'Mute']
+        path_parts = web.ctx['environ']['PATH_INFO'].split('/')  # ['', 'HAJointSpace', 'set_input_key', 'Mute']
         if len(path_parts) >= 3:
+            # TODO: i dont even know whats going on here anymore :S
             self.parentClass = path_parts[1]
             self.methodname = path_parts[2]
         # logging.info('Dynamic WS Set call - %s %s %s' %(self.parentClass, self.methodname,
@@ -230,9 +253,13 @@ class WebService_Dynamic_Set(object):
 class WebService_Dynamic_Get(object):
     currentInstance = None
 
+    def __init__(self, *args, **kwargs):
+        self.parentClass = None
+        self.methodname = None
+
     @webservice_jsonp
     def GET(self, *args, **kwargs):
-        path_parts = web.ctx['environ']['PATH_INFO'].split('/') # ['', 'HAJointSpace', 'set_input_key', 'Mute']
+        path_parts = web.ctx['environ']['PATH_INFO'].split('/')  # ['', 'HAJointSpace', 'set_input_key', 'Mute']
         if len(path_parts) >= 3:
             self.parentClass = path_parts[1]
             self.methodname = path_parts[2]

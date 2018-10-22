@@ -1,6 +1,6 @@
 #!/usr/bin/python
+# coding=utf-8
 from habase import HomeAutomationThread
-import logging, threading
 
 
 class LEDMatrixBase(HomeAutomationThread):

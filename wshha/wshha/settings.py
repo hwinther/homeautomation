@@ -80,11 +80,11 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        #'NAME': 'homeautomation',
-        #'USER': 'homeautomation',
-        #'PASSWORD': 'YhxeAZVTNttpGwbA9hADSkawTr7t75zx',
-        #'HOST': 'aurora.wsh.no',
-        #'PORT': '5432',
+        # 'NAME': 'homeautomation',
+        # 'USER': 'homeautomation',
+        # 'PASSWORD': 'YhxeAZVTNttpGwbA9hADSkawTr7t75zx',
+        # 'HOST': 'aurora.wsh.no',
+        # 'PORT': '5432',
     }
 }
 

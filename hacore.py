@@ -1,11 +1,15 @@
 #!/usr/bin/python
-import logging, time, traceback
+# coding=utf-8
+import logging
+import time
+import traceback
+
+from cli import LEDMatrixSocketClient
+from habase import HomeAutomationQueueThread
 from hacommon import ThreadList, QueueList, load_modules_from_tuple
 from hasettings import INSTALLED_APPS, REMOTE_APPS
-from habase import HomeAutomationQueueThread
 from hawebservice import HAWebService
 from ledmatrixbase import LEDMatrixBase
-from cli import LEDMatrixSocketClient
 
 
 class HACore(object):
@@ -85,7 +89,7 @@ class HACore(object):
                         remote_module['socketclient'] = LEDMatrixSocketClient(remote_addr)  # cache
 
                     for item in [i for i in self.sharedqueue if i.cls in remote_apps]:
-                        logging.info('Sending queue item to remote host: ' + str(remote_module) )
+                        logging.info('Sending queue item to remote host: ' + str(remote_module))
                         remote_module['socketclient'].SendSerializedQueueItem(item.__str__())
                         self.sharedqueue.remove(item)
                 time.sleep(0.1)
@@ -93,7 +97,8 @@ class HACore(object):
                 if time.time() - timecheck > 10:
                     timecheck = time.time()
                     logging.info('10s mainloop interval, number of threads: %d (%s), queue items: %d' %
-                        ( len(self.threadlist), ', '.join([str(i) for i in self.threadlist]), len(self.sharedqueue) ) )
+                                 (len(self.threadlist), ', '.join([str(i) for i in self.threadlist]),
+                                  len(self.sharedqueue)))
                     for _thread in self.threadlist:
                         if not _thread.isAlive():
                             logging.info('Removing dead thread: ' + _thread.name)
@@ -109,7 +114,7 @@ class HACore(object):
                 logging.info('Detected ctrl+c, exiting main loop and stopping all threads')
                 break
             except:
-                logging.critical("Unexpected error in main loop (exiting): " + traceback.format_exc() )
+                logging.critical("Unexpected error in main loop (exiting): " + traceback.format_exc())
                 break
 
         logging.debug('Stopping all threads')
