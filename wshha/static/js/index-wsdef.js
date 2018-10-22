@@ -176,18 +176,18 @@ $( document ).ready(function() {
 	}
 	window.CallWS = CallWS;
 	
-	function loadDefinitions() {
+	function loadSchema() {
 		$.ajax({
 		   type: 'GET',
-			url: location.protocol + '//' + location.host + ':8080/definitions/',
+			url: location.protocol + '//' + location.host + ':8080/schema/',
 			async: false,
 			jsonpCallback: 'c'+Math.floor((Math.random()*100000000)+1),
 			contentType: "application/json",
 			dataType: 'jsonp',
 			success: function(json) {
-				for(var i=0; i < json.Definitions.length; i++)
+				for(var i=0; i < json.Schema.length; i++)
 				{
-					var wsdi = json.Definitions[i];
+					var wsdi = json.Schema[i];
 					var availablecontrols = $('#AvailableControls');
 					if (wsdi.Enums.hasOwnProperty('key'))
 					{
@@ -300,6 +300,6 @@ $( document ).ready(function() {
 			timeout: 2000
 		});
 	}
-	loadDefinitions(); //load them on document.ready
+	loadSchema(); //load them on document.ready
 	
 });

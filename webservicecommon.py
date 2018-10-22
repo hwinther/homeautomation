@@ -71,8 +71,8 @@ def webservicedecorator_globals_add(**kwargs):
     :return:
     """
     global webservice_globals
-    for key, value in kwargs.iteritems():
-        webservice_globals[key] = value
+    for key in kwargs.keys():
+        webservice_globals[key] = kwargs[key]
 
 
 def webservice_state_instances_add(name, inst):
@@ -110,8 +110,8 @@ def webservice_hawebservice_init(**kwargs):
     """
     global webservice_globals  # now deprecated
     webservice_globals = {}
-    for key, value in kwargs.iteritems():
-        webservice_globals[key] = value  # perhaps just clone/copy the kwargs dict directly?
+    for key in kwargs.keys():
+        webservice_globals[key] = kwargs[key]  # perhaps just clone/copy the kwargs dict directly?
     global webservice_state_instances
     webservice_state_instances = {}
     global webservice_module_class_instances
@@ -128,8 +128,8 @@ def webservice_state_jsonp(f):
     def decorated(*args, **kwargs):
         callback_name = web.input(callback='jsonCallback').callback
         web.header('Content-Type', 'application/javascript')
-        for key, value in webservice_state_instances.iteritems():
-            kwargs[key] = value
+        for key in webservice_state_instances.keys():
+            kwargs[key] = webservice_state_instances[key]
         return '%s(%s)' % (callback_name, f(*args, **kwargs))
 
     return decorated
@@ -149,8 +149,10 @@ def webservice_json(f):
 
         if modulename in webservice_module_class_instances.keys():
             decorator.currentInstance = webservice_module_class_instances[modulename]
+            # logging.info('modulename=%s instance=%s' %
+            #              (modulename, repr(webservice_module_class_instances[modulename])))
         else:
-            logging.warn('No class instance reference found for ' + modulename)
+            logging.warn('! No class instance reference found for ' + modulename)
             decorator.currentInstance = None
 
         retval = f(*args, **kwargs)
@@ -177,6 +179,8 @@ def webservice_jsonp(f):
         # global webservice_module_class_instances
         if modulename in webservice_module_class_instances.keys():
             decorator.currentInstance = webservice_module_class_instances[modulename]
+            # logging.info('modulename=%s instance=%s' %
+            #              (modulename, repr(webservice_module_class_instances[modulename])))
         else:
             logging.warn('No class instance reference found for ' + modulename)
             decorator.currentInstance = None

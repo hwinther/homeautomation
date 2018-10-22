@@ -27,8 +27,8 @@ class SerializableQueueItem:
         return pickle.dumps(self)
 
     @staticmethod
-    def __fromstr__(str):
-        return pickle.loads(str)
+    def __fromstr__(data):
+        return pickle.loads(data)
 
 
 class ThreadList(list):
@@ -59,15 +59,24 @@ def load_modules_from_tuple(modules):
     module_dict = {}
     for module in modules:
         modulename = module
-        instancename = ''
+        package = ''
         if modulename.find('.') != -1:
-            modulename, instancename = modulename.split('.', 1)
-        mod = importlib.import_module(modulename.lower())
-        cls = getattr(mod, modulename)
-        modulekey = modulename
-        if instancename is not '':
-            modulekey += '.' + instancename
-        module_dict[modulekey] = ModuleDefinition(mod, cls)
+            package, modulename = modulename.split('.', 1)
+        # print('module=%s modulenname=%s' % (module, modulename))
+        mod = importlib.import_module(module.lower())
+        # print('Module: %s' % repr(mod))
+
+        # cls = getattr(mod, modulename.lower())
+        cls = None
+        for property_name in dir(mod):
+            if property_name.lower() == modulename:
+                cls = getattr(mod, property_name)
+                break
+        if cls is None:
+            raise Exception('Could not find %s in %s' % (modulename, repr(mod)))
+
+        logging.info('adding module=%s cls=%s' % (module, repr(cls)))
+        module_dict[module] = ModuleDefinition(mod, cls)
     return module_dict
 
 
@@ -95,10 +104,10 @@ def ignore_exception(exception=Exception, default_val=None):
       int_try_parse = ignore_exception(ValueError)(int)
     """
 
-    def decorator(function):
+    def decorator(func):
         def wrapper(*args, **kwargs):
             try:
-                return function(*args, **kwargs)
+                return func(*args, **kwargs)
             except exception:
                 return default_val
 

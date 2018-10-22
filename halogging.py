@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # coding=utf-8
 import logging
+import coloredlogs
 import os
 
 from hasettings import BASE_DIR, LOGLEVEL
@@ -21,9 +22,10 @@ def InitLogging(filepath=None, loglevel=None):
     file_handler.setFormatter(log_formatter)
     root_logger.addHandler(file_handler)
 
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(log_formatter)
-    root_logger.addHandler(console_handler)
+    # console_handler = logging.StreamHandler()
+    # console_handler.setFormatter(log_formatter)
+    # root_logger.addHandler(console_handler)
+    coloredlogs.install(level=LOGLEVEL)
 
 
 def LogConcat(*args):

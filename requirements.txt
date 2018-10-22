@@ -10,3 +10,4 @@ django-graphos
 transitions
 gspread
 oauth2client
+coloredlogs

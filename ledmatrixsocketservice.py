@@ -109,7 +109,7 @@ class LEDMatrixSocketServiceUDP(LEDMatrixBase):
         # for tcp set option to reuse
         self.sock.bind(SOCKET_UDP_LISTEN_ADDR)
         logging.info('SocketServiceUDP listening on ' + str(SOCKET_UDP_LISTEN_ADDR))
-        self.sock.setblocking(0)
+        self.sock.setblocking(False)
         while not self.stop_event.is_set():
             ready = select.select([self.sock], [], [], 1)
             if ready[0]:

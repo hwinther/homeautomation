@@ -8,7 +8,7 @@ from cli import LEDMatrixSocketClient
 from habase import HomeAutomationQueueThread
 from hacommon import ThreadList, QueueList, load_modules_from_tuple
 from hasettings import INSTALLED_APPS, REMOTE_APPS
-from hawebservice import HAWebService
+from modules.hawebservice import HAWebService
 from ledmatrixbase import LEDMatrixBase
 
 

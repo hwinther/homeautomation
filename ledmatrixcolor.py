@@ -50,8 +50,11 @@ def clampX(n, minn, maxn):
 
 def CreateColormap(num_steps=None, start_red=None, start_green=None, start_blue=None, end_red=None,
                    end_green=None, end_blue=None):
-    """Creates a color map based on starting and ending points for each color in the RGB format
-    Default values for most will do, they are 0-255 (max-min) and 32 steps (32 pixel height for screen when using this with an audio visualizer)"""
+    """
+    Creates a color map based on starting and ending points for each color in the RGB format
+    Default values for most will do, they are 0-255 (max-min) and 32 steps
+     (32 pixel height for screen when using this with an audio visualizer)
+    """
     if num_steps is None:
         num_steps = 32
 

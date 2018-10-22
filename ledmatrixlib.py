@@ -683,7 +683,7 @@ def SocketListener(rgbmatrix, stop_event, socketcommandhandler=None):
     # for tcp set option to reuse
     s.bind(('', 1234))
     logging.info('SocketListener listening on 0.0.0.0:1234 (UDP)')
-    s.setblocking(0)
+    s.setblocking(False)
     bufferdict = {}  # dictionary that keeps each clients buffer when the received data becomes segmented
     while not stop_event.is_set():
         ready = select.select([s], [], [], 1)
@@ -867,7 +867,8 @@ def StateSocket(rgbmatrix):
                 if rgbm.is_idle():
                     # display clock or screensaver
                     if drawClock:
-                        if drawClockClear: rgbmatrix.Clear()
+                        if drawClockClear:
+                            rgbmatrix.Clear()
                         displayCurrentTime(rgbmatrix, 0, 0, 0, 0, 255)
         except KeyboardInterrupt:
             logging.info('Detected ctrl+c, exiting main loop and stopping all threads')

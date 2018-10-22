@@ -15,3 +15,7 @@ class DHT22(DHT11):
 
 def read(typ, pin):
     pass
+
+
+def read_entr(sensor, pin):
+    pass
