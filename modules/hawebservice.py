@@ -95,7 +95,8 @@ class HAWebService(HomeAutomationQueueThread):
 
                     # make urls into instance format
                     for wsd in wsdef:
-                        wsd.url = '/' + modulename + '/' + instancename + wsd.url
+                        logging.warn('wsd.url was: %s' % wsd.url)
+                        # wsd.url = '/' + modulename + '/' + instancename + wsd.url
 
                 WebServiceDefinitions.extend(wsdef)
                 logging.debug(str(len(wsdef)) + ' definitions loaded from module ' + mod)

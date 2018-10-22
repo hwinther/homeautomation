@@ -149,8 +149,8 @@ def webservice_json(f):
 
         if modulename in webservice_module_class_instances.keys():
             decorator.currentInstance = webservice_module_class_instances[modulename]
-            # logging.info('modulename=%s instance=%s' %
-            #              (modulename, repr(webservice_module_class_instances[modulename])))
+            logging.info('modulename=%s instance=%s' %
+                         (modulename, repr(webservice_module_class_instances[modulename])))
         else:
             logging.warn('! No class instance reference found for ' + modulename)
             decorator.currentInstance = None
@@ -175,14 +175,16 @@ def webservice_jsonp(f):
         #  with %s(%s) after.. data = webservice_json(f)
         decorator = args[0]
         modulename = decorator.__module__
+        modulename = modulename.replace('modules.', '')
 
         # global webservice_module_class_instances
         if modulename in webservice_module_class_instances.keys():
             decorator.currentInstance = webservice_module_class_instances[modulename]
-            # logging.info('modulename=%s instance=%s' %
-            #              (modulename, repr(webservice_module_class_instances[modulename])))
+            logging.debug('modulename=%s instance=%s' %
+                          (modulename, repr(webservice_module_class_instances[modulename])))
         else:
-            logging.warn('No class instance reference found for ' + modulename)
+            logging.warn('No class instance reference found for %s' % modulename)
+            logging.warn("keys: %s" % repr(webservice_module_class_instances.keys()))
             decorator.currentInstance = None
 
         retval = f(*args, **kwargs)
